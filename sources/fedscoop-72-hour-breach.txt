@@ -15,3 +15,6 @@ If enacted, the rules would also enhance security measures by requiring Emergenc
 They would also create a buffer against fake or false alerts by requiring participating wireless providers to transmit sufficient authentication information to ensure that only valid alerts are displayed on consumer devices like phones and televisions. 
 The proposals come after the Federal Emergency Management Agency warned in August that hackers can use the U.S. Emergency Alert System to issue TV, radio and cable network alerts if encoder and decoder device software isn’t properly updated. 
 FEMA issued an advisory to broadcasters after learning the exploit may be used to a large audience at the DEF CON hacking conference in Las Vegas that ran in early August. 
+
+
+

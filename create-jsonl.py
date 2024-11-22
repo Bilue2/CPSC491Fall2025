@@ -1,6 +1,22 @@
 import os
 import json
 
+
+# Function to process all text files in the /sources directory and create JSONL entries
+def process_all_text_files(directory="sources/"):
+    entries = []
+    for file_name in os.listdir(directory):
+        if file_name.endswith(".txt"):
+            file_path = os.path.join(directory, file_name)
+            entry = process_text_file(file_path)  # Process each text file to create an entry
+            entries.append(entry)
+    return entries
+
+# Main execution block
+if __name__ == "__main__":
+    entries = process_all_text_files()  # Process all text files in the /sources directory
+    save_to_jsonl(entries)  # Save all entries to a JSONL file
+
 # Function to read the content of a text file
 def read_text_file(file_path):
     with open(file_path, 'r', encoding='utf-8') as file:
