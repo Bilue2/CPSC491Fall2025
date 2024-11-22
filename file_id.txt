@@ -1,0 +1,10 @@
+{
+  "id": "file-MgG5HaybTAKRRcGem5b2Mq",
+  "bytes": 34842,
+  "created_at": 1732306372,
+  "filename": "dataset_prepared.jsonl",
+  "object": "file",
+  "purpose": "fine-tune",
+  "status": "processed",
+  "status_details": null
+}
