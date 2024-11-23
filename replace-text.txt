@@ -1,1 +1,0 @@
-echo 'sk-proj-2vNqf94tlV0ZdyTYs--0_V2tiXVXP0uQkr2Swb_cv1hPTZK7fdit7wRO0tE9H_kkpNEH-SNJwxT3BlbkFJMxOStXHOxzfkTJSe21urpNDkOuSYJZ4G-IM1uT2ZB4GOvzGzziBgcngz7dVQ36ZD6Urmoe4EU==>REDACTED' > replace-text.txt
