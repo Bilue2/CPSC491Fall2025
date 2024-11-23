@@ -1,3 +1,5 @@
+#this script will merge the separate JSONL files into one single file. 
+
 import os
 import json
 
