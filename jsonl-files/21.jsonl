@@ -1,0 +1,35 @@
+{'prompt': 'What is the significance of a .gov website?', 'completion': 'A .gov website belongs to an official government organization in the United States and is secured using HTTPS, indicated by a locked padlock icon.'}
+```jsonl
+{"prompt": "What is the new event code proposed by the FCC for the Emergency Alert System?", "completion": "The FCC proposed adding a new \"Missing and Endangered Persons\" or \"MEP\" event code to the nation's Emergency Alert System (EAS)."}
+{"prompt": "Why is the issue of missing and endangered persons particularly prevalent in Tribal communities?", "completion": "The issue of missing and endangered persons is particularly prevalent in Tribal communities because American Indian and Alaska Native people are at a disproportionate risk of experiencing violence, murder, or vanishing."}
+{"prompt": "What is the Wireless Emergency Alerts (WEA) system?", "completion": "The Wireless Emergency Alerts (WEA) system is a public safety system that allows customers who own compatible mobile devices to receive geographically targeted, text-like messages alerting them of imminent threats to safety in their area."}
+{"prompt": "How are WEA alerts delivered to mobile devices?", "completion": "Authorized public safety officials send WEA alerts through FEMA's Integrated Public Alert and Warning System (IPAWS) to participating wireless carriers, which then push the alerts to compatible mobile devices in the affected area."}
+{"prompt": "Do consumers need to pay to receive WEA alerts?", "completion": "No, consumers do not pay to receive WEA alerts. The alerts are free."}
+{"prompt": "Who can receive the WEA alerts?", "completion": "WEA alerts are broadcast to the geographic area affected by an emergency, so anyone with a WEA-capable mobile device in that zone can receive the alert."}
+{"prompt": "Do consumers need to sign up to receive WEA alerts?", "completion": "No, consumers do not need to sign up for WEA alerts. Government officials can send emergency alerts to all subscribers with WEA-capable devices if their wireless carrier participates in the program."}
+{"prompt": "What types of alerts does WEA deliver?", "completion": "WEA delivers alerts that cover critical emergency situations, such as severe weather and missing children."}
+{"prompt": "Can prepaid phone users receive WEA alerts?", "completion": "Yes, consumers with prepaid phones can receive WEAs as long as their provider participates in WEA and the customer has a WEA-enabled device."}
+{"prompt": "Does WEA track my location?", "completion": "No, WEA does not track consumers' locations."}
+```
+```jsonl
+{"prompt": "Can consumers with prepaid phones receive WEA alerts?", "completion": "Yes, as long as their provider participates in WEA and they have a WEA-enabled device."}
+{"prompt": "Does WEA track my location?", "completion": "No, WEA does not track the location of alert recipients."}
+{"prompt": "Are WEAs the same as text messages?", "completion": "No, WEAs are transmitted using a technology different from voice calls and SMS text messages."}
+{"prompt": "Do consumers need a new phone or smart phone to receive alerts?", "completion": "Consumers should check with their wireless carrier about WEA-capable handsets and CTIA's lists of phones offered by major providers."}
+{"prompt": "Is WEA available everywhere?", "completion": "No, WEA availability depends on the carrier's participation and whether they offer it in certain service areas or on certain devices."}
+{"prompt": "Can consumers block WEAs?", "completion": "Consumers can block imminent threat and AMBER Alerts but cannot block National Alerts."}
+{"prompt": "Why can't consumers block National Alerts?", "completion": "The WARN Act permits carriers to block all alerts except National Alerts."}
+{"prompt": "How can subscribers find out if their carrier offers WEA?", "completion": "Non-participating carriers must notify customers, but consumers should confirm with their carriers."}
+{"prompt": "Why didn't I receive a WEA when my friend did?", "completion": "Your device must be WEA-capable, turned on, not in airplane mode, and connected to a participating carrier's tower."}
+{"prompt": "How geographically precise is WEA?", "completion": "WEA precision has improved over time, now requiring alerts to be geo-targeted with a 1/10 mile overshoot using compatible phones."}
+{"prompt": "What is the FCC's role in WEA?", "completion": "The FCC sets regulations for participating wireless carriers, including requirements for geographic targeting of alerts."}
+```
+```jsonl
+{"prompt": "What is the FCC's role in Wireless Emergency Alerts (WEA)?", "completion": "The FCC is directed by the WARN Act to adopt technical and operational requirements for WEA service. Wireless carriers participating in WEA must adhere to these rules."}
+{"prompt": "Does the FCC send Wireless Emergency Alerts (WEA)?", "completion": "No, the FCC does not send alerts. Alerts are sent by federal agencies like the National Weather Service and state and local government authorities through FEMA's IPAWS system to participating wireless carriers."}
+{"prompt": "Who should I contact with questions about how WEA works on my wireless device?", "completion": "For questions about how WEA works on specific devices, you should check with your wireless provider."}
+{"prompt": "How can I determine if my wireless phone or device can receive WEA messages?", "completion": "To find out if your cell phone or mobile device is WEA-capable, you should check with your wireless service provider. Not all providers offer WEA, and its availability may vary across devices and service areas."}
+```
+{"prompt": "How can a person with print disabilities request alternate formats of an article?", "completion": "People with print disabilities can request braille, large print, or screen-reader friendly versions via the email form at fcc504@fcc.gov."}
+{"prompt": "Where can you learn about consumer issues according to the given text?", "completion": "You can learn about consumer issues at the FCC's Consumer Help Center by visiting fcc.gov/consumers."}
+{"prompt": "How can someone file a complaint with the FCC?", "completion": "To file a complaint or share your story with the FCC, visit the Consumer Complaint Center at consumercomplaints.fcc.gov."}

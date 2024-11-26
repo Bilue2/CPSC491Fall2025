@@ -4,7 +4,7 @@
 
 U.S. Government Accountability Office
 Emergency alerts can provide lifesaving information. FEMA manages the Integrated Public Alert and Warning System, allowing public safety agencies to send alerts to cell phones, radios, and TVs during natural disasters or other emergencies.
-FEMA has begun to modernize alerting capabilities with help from the FCC. However, some state and local public safety agencies cannot access the system and others have low confidence in using it. Also, without goals and performance measures for improvements made to wireless emergency alerts, the FCC can’t ensure the system is working as intended.
+FEMA has begun to modernize alerting capabilities with help from the FCC. However, some state and local public safety agencies cannot access the system and others have low confidence in using it. Also, without goals and performance measures for improvements made to wireless emergency alerts, the FCC can't ensure the system is working as intended.
 We are making 3 recommendations to address these concerns.
 Cell phone with test emergency alert displayed.
 

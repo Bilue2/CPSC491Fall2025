@@ -1,0 +1,80 @@
+```jsonl
+{"prompt": "Who should be contacted for questions about the FCC's FOIA Annual Report for Fiscal Year 2023?", "completion": "Vanessa Lamb and Stephanie Kost should be contacted for questions about the FCC's FOIA Annual Report for Fiscal Year 2023."}
+{"prompt": "How can a paper copy of the FCC's FOIA Annual Report be obtained?", "completion": "A paper copy of the FCC's FOIA Annual Report can be requested by emailing Benish.Shah@fcc.gov, and it will be mailed to the requester."}
+{"prompt": "What is the process for filing a FOIA request to the FCC?", "completion": "FOIA requests should be submitted via ArkCase at https://fcc.arkcase.com/foia/portal/home or mailed to the Office of Managing Director, Attention: FOIA Public Liaison, Federal Communications Commission, 45 L Street NE, Suite 3-309, Washington, DC 20554."}
+{"prompt": "Where should administrative appeals of FOIA denials be submitted for the FCC?", "completion": "Administrative appeals must be submitted to P. Michele Ellison, Chief FOIA Officer, Office of General Counsel, Suite 10-425, Federal Communications Commission, 45 L Street NE, Washington, DC 20554, or electronically at FOIA-Appeal@fcc.gov."}
+{"prompt": "Why are some FOIA requests denied or partially denied by the FCC?", "completion": "FOIA requests are often denied or partially denied because they fall under Exemptions 4, 5, 6, and 7, which protect trade secrets, privileged communications, personal privacy, and law enforcement-related records."}
+```
+```jsonl
+{"prompt": "What is Exemption 6 in the context of FOIA?", "completion": "Exemption 6 protects information concerning matters of personal privacy."}
+{"prompt": "What agency is abbreviated as FCC?", "completion": "FCC stands for Federal Communications Commission."}
+{"prompt": "What does AFR represent in the report?", "completion": "AFR stands for Application for Review."}
+{"prompt": "What does FOIA stand for?", "completion": "FOIA stands for Freedom of Information Act."}
+{"prompt": "Define an Administrative Appeal.", "completion": "An Administrative Appeal is a request to a federal agency to review a FOIA determination made at the initial request level at a higher administrative level."}
+{"prompt": "How is the average number calculated?", "completion": "The average number is calculated by dividing the sum of a group of numbers by the quantity of numbers in the group."}
+{"prompt": "What is a backlog in the context of FOIA?", "completion": "A backlog is the number of requests or administrative appeals pending at an agency at the end of the fiscal year that are beyond the statutory time period for a response."}
+{"prompt": "What is a component within an agency?", "completion": "A component is an entity like an Office, Division, Bureau, Center, or Directorate within an agency that processes FOIA requests on a decentralized basis."}
+{"prompt": "Explain the term 'Consultation' in FOIA processing.", "completion": "Consultation is the procedure where the agency responding to a FOIA request forwards a record to another agency for review due to that agency's interest in the document."}
+{"prompt": "What is an Exemption 3 Statute?", "completion": "An Exemption 3 Statute is a federal statute that exempts information from disclosure and is relied upon by an agency to withhold information under subsection (b)(3) of the FOIA."}
+{"prompt": "What is a FOIA Request?", "completion": "A FOIA Request is a request to a federal agency for access to records concerning a person, organization, or topic of interest, including third-party and first-party requests that require the use of FOIA."}
+{"prompt": "What does a Full Grant mean in FOIA terms?", "completion": "A Full Grant is an agency decision to disclose all records in full in response to a FOIA request."}
+{"prompt": "Define Full Denial in the context of FOIA.", "completion": "A Full Denial is an agency decision not to release any records in response to a FOIA request because they are exempt under FOIA exemptions or due to procedural reasons."}
+{"prompt": "What is the median number, and how is it different from the average?", "completion": "The median number is the middle number in a set of numbers, unlike the average, which is the total sum divided by the number of items."}
+{"prompt": "Explain Multi-Track Processing.", "completion": "Multi-Track Processing is a system where simple requests with minimal review are processed in one track, while more complex requests are processed in separate tracks."}
+```
+```jsonl
+{"prompt": "What is Multi-Track Processing in the context of FOIA?", "completion": "It is a system in which simple requests requiring minimal review are placed in one track, while more complex requests are placed in one or more other tracks. Requests granted expedited processing are placed in another track and processed on a first in/first out basis."}
+{"prompt": "What is Expedited Processing according to FOIA?", "completion": "It refers to the processing of a FOIA request on an expedited basis when the requester satisfies the requirements for expedited processing as set forth in the statute and agency regulations."}
+{"prompt": "How is a Simple Request defined in FOIA?", "completion": "A Simple Request is a FOIA request that is placed in the fastest (non-expedited) track based on the low volume and/or simplicity of the records requested."}
+{"prompt": "What characterizes a Complex Request in FOIA processing?", "completion": "A Complex Request is a FOIA request placed in a slower track due to the high volume and/or complexity of the records requested."}
+{"prompt": "What does a Partial Grant/Partial Denial mean in response to a FOIA request?", "completion": "It means an agency decision to disclose portions of the records while withholding other portions that are exempt under the FOIA, or denying a portion of the request for procedural reasons."}
+{"prompt": "Define a Pending Request or Pending Administrative Appeal.", "completion": "It is a request or administrative appeal for which an agency has not taken final action in all respects."}
+{"prompt": "What is a Perfected Request in FOIA terms?", "completion": "A Perfected Request is a request for records that reasonably describes such records and is made following published rules stating the time, place, fees, and procedures to be followed."}
+{"prompt": "What is meant by a Processed Request or Processed Administrative Appeal?", "completion": "It is a request or administrative appeal for which an agency has taken final action in all respects."}
+{"prompt": "What does 'Range in Number of Days' refer to in FOIA processing?", "completion": "It refers to the lowest and highest number of days it takes to process requests or administrative appeals."}
+{"prompt": "What are FOIA's Exemption 1 provisions?", "completion": "Exemption 1 applies to classified national defense and foreign relations information."}
+```
+```jsonl
+{"prompt": "What type of information is withheld under 10 U.S.C. § 424?", "completion": "Organization or any function of an organization, and certain information pertaining to, employees of the Defense Intelligence Agency, the National Reconnaissance Office, and the National Geospatial-Intelligence Agency."}
+{"prompt": "Which case citations are associated with the withholding of information under 10 U.S.C. § 424?", "completion": "Hamdan v. DOJ, 797 F.3d 759, 776 (9th Cir. 2015); Freedom Watch, Inc. v. NSA, 197 F. Supp. 3d 165, 174 (D.D.C. 2016); Wickwire Gavin, P.C. v. Def. Intel. Agency, 330 F. Supp. 2d 592, 602 (E.D. Va. 2004)."}
+{"prompt": "Under which statute is information about intelligence sources and methods withheld, specifically including information about the organization or functions of the Agency?", "completion": "50 U.S.C. § 3507 (formerly at 50 U.S.C. § 403g) under the Central Intelligence Agency Act of 1949."}
+{"prompt": "How many FOIA requests were pending at the FCC as of the start of the fiscal year?", "completion": "65 requests were pending."}
+{"prompt": "What is the total number of FOIA requests processed by the FCC in the fiscal year?", "completion": "535 requests were processed."}
+{"prompt": "What is the most common reason for full denial of FOIA requests based on reasons other than exemptions at the FCC?", "completion": "The most common reason is 'No Records' with 91 occurrences."}
+{"prompt": "What exemption was applied most frequently in FOIA requests at the FCC?", "completion": "Exemption 6 was applied most frequently, with 105 occurrences."}
+```
+```jsonl
+{"prompt": "What is the total number of administrative appeals pending at the end of the fiscal year for the FCC component?", "completion": "16"}
+{"prompt": "How many administrative appeals were closed for other reasons by the FCC?", "completion": "11"}
+{"prompt": "For how many administrative appeals were exemptions applied as a reason for denial by the FCC?", "completion": "0"}
+{"prompt": "What was the primary reason for denial of administrative appeals on appeal for the FCC?", "completion": "Improper Request for Other Reasons"}
+{"prompt": "What was the median number of days taken for FCC administrative appeals?", "completion": "181.5"}
+{"prompt": "On what date was the oldest pending administrative appeal for the FCC initiated?", "completion": "2018-10-01"}
+{"prompt": "What was the median response time for simple FOIA requests processed by the FCC?", "completion": "17.0 days"}
+{"prompt": "What is the average response time for complex FOIA requests processed by the FCC?", "completion": "177.44 days"}
+{"prompt": "What was the highest number of days taken to process an expedited FOIA request by the FCC?", "completion": "568.0 days"}
+{"prompt": "How many days was the 10th oldest pending administrative appeal in the FCC pending?", "completion": "191 days"}
+```
+```jsonl
+{"prompt": "What is the median number of days for FCC simple requests processing?", "completion": "19.0 days."}
+{"prompt": "How many FCC simple requests were processed within 20 days?", "completion": "315 requests."}
+{"prompt": "What is the total number of FCC simple requests processed?", "completion": "427 requests."}
+{"prompt": "What was the median number of days for processing FCC complex requests?", "completion": "346.0 days."}
+{"prompt": "How many FCC complex requests were processed between 61 and 80 days?", "completion": "4 requests."}
+{"prompt": "How many pending expedited processing requests are there for the FCC?", "completion": "9 pending requests."}
+{"prompt": "What is the oldest pending request date received for the FCC?", "completion": "2016-11-18."}
+{"prompt": "How many FCC requests for expedited processing were denied?", "completion": "48 requests."}
+{"prompt": "What is the average number of days to adjudicate FCC fee waiver requests?", "completion": "8.75 days."}
+{"prompt": "How many full-time FOIA employees are there in the FCC?", "completion": "5 employees."}
+{"prompt": "What are the total costs of FCC FOIA operations?", "completion": "$2,874,513.47."}
+{"prompt": "What percentage of total costs were covered by FCC fees collected?", "completion": "0.0800%"}
+{"prompt": "How many times was Subsection (C) used by the FCC?", "completion": "0 times."}
+```
+{'prompt': 'What was the total amount of fees collected by the FCC?', 'completion': '$2,294.93.'}
+{'prompt': 'How many times was Subsection (C) used overall?', 'completion': '0 times.'}
+{'prompt': 'How many records were posted by the Program Offices at the FCC?', 'completion': '2,752,838 records.'}
+{'prompt': 'What was the number of backlogged FOIA requests at the FCC by the end of the fiscal year?', 'completion': '35 requests.'}
+{'prompt': 'How many consultations from other agencies were processed by the FCC during the fiscal year?', 'completion': '17 consultations.'}
+{'prompt': 'How many FOIA requests did the FCC receive in the current annual report?', 'completion': '586 requests.'}
+{'prompt': 'How many administrative appeals were received by the FCC according to the current annual report?', 'completion': '19 appeals.'}
+{'prompt': 'What was the increase in the number of backlogged appeals at the FCC from the previous to the current report?', 'completion': 'Increase from 10 to 13 appeals, an increase of 3 appeals.'}

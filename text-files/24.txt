@@ -4,7 +4,7 @@ What We Do
 
             An official website of the United States government
           
-Here’s how you know
+Hereï¿½s how you know
 
 Official websites use .govA
               .gov website belongs to an official government
@@ -17,7 +17,7 @@ Secure .gov websites use HTTPSA
 Lock
 Locked padlock icon
 
- ) or https:// means you’ve safely connected to
+ ) or https:// means you've safely connected to
               the .gov website. Share sensitive information only on official,
               secure websites.
             

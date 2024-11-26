@@ -1,0 +1,14 @@
+{'prompt': 'What are emergency communication systems used for?', 'completion': 'Emergency communication systems are used to enable communications between the public and response agencies and among first responders during day-to-day operations and large-scale disasters.'}
+{'prompt': 'What components are included in emergency communication systems?', 'completion': 'Emergency communication systems include 911 systems, land mobile radio (LMR) systems, the First Responder Network (FirstNet), and alerting systems.'}
+{'prompt': 'What challenges do emergency communication systems face?', 'completion': 'Challenges include interoperability issues due to different technologies and the integration of new technologies like IP-based systems, which can be costly and require upgrades.'}
+{'prompt': 'What opportunities do new technologies present to emergency communications?', 'completion': 'New technologies offer advancements in geo-location for easier location of 911 callers and improved alerting systems to mobile phones, enabling nationwide interconnectivity and enhanced information sharing.'}
+{'prompt': 'What may be needed as emergency communications systems converge toward IP-based platforms?', 'completion': 'There may be a need for new policies to integrate these technologies into response plans and support collaborative planning and exercises across government levels.'}
+{"prompt": "What are some federal programs established to support emergency communications?", "completion": "The federal programs include the National 9-1-1 Program by NHTSA, FirstNet, IPAWS, Emergency Communications Division in CISA, and federal grant programs for emergency communications."} 
+
+{"prompt": "What is the role of the First Responder Network Authority (FirstNet)?", "completion": "FirstNet is the federal authority within the NTIA in the U.S. Department of Commerce established to create the nationwide public safety broadband network."} 
+
+{"prompt": "What is the Integrated Public Alert and Warning System (IPAWS) responsible for?", "completion": "IPAWS is the national alerting system administered by FEMA, responsible for public alerts."} 
+
+{"prompt": "Which division in the U.S. Department of Homeland Security promotes interoperable communications?", "completion": "The Emergency Communications Division in CISA is responsible for promoting interoperable and coordinated communications across all levels of government."} 
+
+{"prompt": "What is the responsibility of the FCC\'s Public Safety and Homeland Security Bureau (PSHSB)?", "completion": "The PSHSB administers FCC policies related to emergency communications, including rules for carriers supporting 911 services and disaster management among others."}

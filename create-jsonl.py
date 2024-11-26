@@ -1,55 +1,81 @@
 import os
+from openai import OpenAI 
 import json
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from dotenv import load_dotenv
 
+load_dotenv()
 
-# Function to process all text files in the /sources directory and create JSONL entries
-def process_all_text_files(directory="sources/"):
-    entries = []
-    for file_name in os.listdir(directory):
-        if file_name.endswith(".txt"):
-            file_path = os.path.join(directory, file_name)
-            entry = process_text_file(file_path)  # Process each text file to create an entry
-            entries.append(entry)
-    return entries
+client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
-# Main execution block
-if __name__ == "__main__":
-    entries = process_all_text_files()  # Process all text files in the /sources directory
-    save_to_jsonl(entries)  # Save all entries to a JSONL file
+# Define the directories for text files and JSONL files
+text_folder = 'text-files'
+jsonl_folder = 'jsonl-files'
 
-# Function to read the content of a text file
-def read_text_file(file_path):
-    with open(file_path, 'r', encoding='utf-8') as file:
-        return file.read()
+# Create the JSONL folder if it doesn't exist
+if not os.path.exists(jsonl_folder):
+    os.makedirs(jsonl_folder)
 
-# Function to create a JSONL entry with the specified format
-def create_jsonl_entry(query, context, answer):
-    return {
-        "query": query,
-        "context": context,
-        "answer": answer
-    }
+def generate_completions(text):
+    """
+    Generate completions from the given text using OpenAI API.
 
-# Function to save a list of entries to a JSONL file
-def save_to_jsonl(entries, output_file="dataset.jsonl"):
-    with open(output_file, 'w', encoding='utf-8') as file:
-        for entry in entries:
-            json.dump(entry, file)
-            file.write('\n')
-    print(f"JSONL file has been saved to {output_file}")
+    Args:
+        text (str): The input text to generate completions from.
 
-# Function to process a text file and create a JSONL entry
-def process_text_file(file_path):
-    text_content = read_text_file(file_path)  # Read the text file content
-    # Define a fixed query and answer for demonstration purposes
-    query = "What is the main topic of the document?"
-    context = text_content  # Use the entire text as the context
-    answer = "The document discusses emergency alert systems and related issues."
-    return create_jsonl_entry(query, context, answer)  # Create a JSONL entry
+    Returns:
+        list: A list of completion strings.
+    """
+    # Initialize the text splitter with specified chunk size and overlap
+    text_splitter = RecursiveCharacterTextSplitter(
+        chunk_size=4000,  # Customize chunk size
+        chunk_overlap=300  # Overlap between chunks
+    )
+    # Split the input text into manageable chunks
+    chunks = text_splitter.split_text(text)
+    completions = []
 
-# Main execution block
-if __name__ == "__main__":
-    input_file = "sources/gao-agencies.txt"  # Specify the input text file
-    entry = process_text_file(input_file)  # Process the text file to create an entry
-    save_to_jsonl([entry])  # Save the entry to a JSONL file
+    # Iterate over each chunk to generate completions
+    for chunk in chunks:
+        # Request completion from OpenAI API for each chunk
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {"role": "system", "content": "I am going to feed you chunks of text. Your task is to read all of the chunks and generate JSONL datasets that will be used to train a GPT-4 model. When generating the JSONL dataset, ensure that the 'prompt' and 'completion' are not the same, and that they are in question and answer format. The JSONL dataset should have the following format: {'prompt': '...', 'completion': '...'}. Your response should only contain the JSONL dataset, and nothing else."},
+                {"role": "user", "content": chunk}
+            ],
+            max_tokens=4000
+        )
+        # Extract and clean the completion text
+        completion = response.choices[0].message.content.strip()
+        # Append the completion to the list
+        completions.append(completion)
 
+    return completions
+
+# Iterate through each file in the text folder
+for text_file in os.listdir(text_folder):
+    # Process only text files
+    if text_file.endswith('.txt'):
+        # Define paths for the text file and the corresponding JSONL file
+        text_path = os.path.join(text_folder, text_file)
+        jsonl_path = os.path.join(jsonl_folder, text_file.replace('.txt', '.jsonl'))
+        
+        # Skip if the JSONL file already exists
+        if os.path.exists(jsonl_path):
+            continue
+
+        # Read the content of the text file
+        with open(text_path, 'r', encoding='utf-8') as file:
+            text = file.read()
+
+        # Generate completions for the text
+        completions = generate_completions(text)
+
+        # Write the completions to a JSONL file
+        with open(jsonl_path, 'w', encoding='utf-8') as jsonl_file:
+            for completion in completions:
+                jsonl_file.write(completion + '\n')  # Write the completion directly
+
+        # Print a message indicating the JSONL file has been generated
+        print(f"Generated {jsonl_path}")

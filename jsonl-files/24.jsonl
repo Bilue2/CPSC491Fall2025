@@ -1,0 +1,7 @@
+```jsonl
+{"prompt": "What is the primary role of the Federal Communications Commission?", "completion": "The Federal Communications Commission regulates interstate and international communications by radio, television, wire, satellite, and cable in the United States."}
+{"prompt": "How are the FCC commissioners appointed?", "completion": "The commissioners are appointed by the President of the United States and confirmed by the U.S. Senate."}
+{"prompt": "What rulemaking process does the FCC use to adopt most of its rules?", "completion": "Most FCC rules are adopted through a process known as 'notice and comment' rulemaking, where the commission seeks public comment before developing final rules."}
+{"prompt": "What was the purpose of the Federal Advisory Committee Act passed in 1972?", "completion": "The Federal Advisory Committee Act was passed to ensure that advice by advisory committees is objective and accessible to the public."}
+{"prompt": "How many members of the same political party can serve as commissioners at the FCC at the same time?", "completion": "Only three commissioners can be of the same political party at any given time."}
+```
