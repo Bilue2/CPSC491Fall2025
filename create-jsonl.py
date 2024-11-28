@@ -10,7 +10,7 @@ client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
 # Define the directories for text files and JSONL files
 text_folder = 'text-files'
-jsonl_folder = 'jsonl-content-files'
+jsonl_folder = 'jsonl-files'
 
 # Create the JSONL folder if it doesn't exist
 if not os.path.exists(jsonl_folder):
@@ -41,7 +41,7 @@ def generate_completions(text):
         response = client.chat.completions.create(
             model="gpt-4o",
             messages=[
-                {"role": "system", "content": "I am going to feed you  chunks of text. Your task is to read each chunk and generate coherent 'content' JSONL lines. Each JSONL line should be a complete and coherent piece of content. The JSONL dataset should have the following format: {'content': '...'} and should only contain the 'content' field. Your response should only contain the JSONL lines, and nothing else."},
+                {"role": "system", "content": "I am going to feed you chunks of text. Your task is to create a JSONL dataset that will be use to fine-tune a GPT chat model. Each entry should be a complete and coherent piece of content. The JSONL dataset should be in the chat format meant for fine-tuning GPT chat models. Your response should only contain the JSONL lines, and nothing else."},
                 {"role": "user", "content": chunk}
             ],
             max_tokens=4000
