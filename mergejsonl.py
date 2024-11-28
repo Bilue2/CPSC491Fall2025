@@ -18,6 +18,6 @@ def merge_jsonl_files(input_directory, output_file):
 
 # Main execution block
 if __name__ == "__main__":
-    input_directory = "jsonl-files"  # Directory containing JSONL files
-    output_file = "dataset.jsonl"  # Output JSONL file
+    input_directory = "jsonl-content-files"  # Directory containing JSONL files
+    output_file = "dataset-content.jsonl"  # Output JSONL file
     merge_jsonl_files(input_directory, output_file)

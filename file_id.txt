@@ -1,8 +1,37 @@
+# first file upload test with limited dataset 
+
 {
   "id": "file-MgG5HaybTAKRRcGem5b2Mq",
   "bytes": 34842,
   "created_at": 1732306372,
   "filename": "dataset_prepared.jsonl",
+  "object": "file",
+  "purpose": "fine-tune",
+  "status": "processed",
+  "status_details": null
+}
+
+
+
+
+# second file upload with full dataset in prompt and completion format
+{
+  "id": "file-PtV5AVdQ7AsokfP3PV1u13",
+  "bytes": 2299091,
+  "created_at": 1732669848,
+  "filename": "validated_dataset_prepared.jsonl",
+  "object": "file",
+  "purpose": "fine-tune",
+  "status": "processed",
+  "status_details": null
+}
+
+
+{
+  "id": "file-1K3Yrmo4JWe96SuhykWZqY",
+  "bytes": 2536492,
+  "created_at": 1732757806,
+  "filename": "validated_dataset-content.jsonl",
   "object": "file",
   "purpose": "fine-tune",
   "status": "processed",

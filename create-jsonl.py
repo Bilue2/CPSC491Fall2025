@@ -10,7 +10,7 @@ client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
 # Define the directories for text files and JSONL files
 text_folder = 'text-files'
-jsonl_folder = 'jsonl-files'
+jsonl_folder = 'jsonl-content-files'
 
 # Create the JSONL folder if it doesn't exist
 if not os.path.exists(jsonl_folder):
@@ -28,8 +28,8 @@ def generate_completions(text):
     """
     # Initialize the text splitter with specified chunk size and overlap
     text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=4000,  # Customize chunk size
-        chunk_overlap=300  # Overlap between chunks
+        chunk_size=2000,  # Added comma here
+        chunk_overlap=200  # Overlap between chunks
     )
     # Split the input text into manageable chunks
     chunks = text_splitter.split_text(text)
@@ -41,7 +41,7 @@ def generate_completions(text):
         response = client.chat.completions.create(
             model="gpt-4o",
             messages=[
-                {"role": "system", "content": "I am going to feed you chunks of text. Your task is to read all of the chunks and generate JSONL datasets that will be used to train a GPT-4 model. When generating the JSONL dataset, ensure that the 'prompt' and 'completion' are not the same, and that they are in question and answer format. The JSONL dataset should have the following format: {'prompt': '...', 'completion': '...'}. Your response should only contain the JSONL dataset, and nothing else."},
+                {"role": "system", "content": "I am going to feed you  chunks of text. Your task is to read each chunk and generate coherent 'content' JSONL lines. Each JSONL line should be a complete and coherent piece of content. The JSONL dataset should have the following format: {'content': '...'} and should only contain the 'content' field. Your response should only contain the JSONL lines, and nothing else."},
                 {"role": "user", "content": chunk}
             ],
             max_tokens=4000
@@ -63,19 +63,17 @@ for text_file in os.listdir(text_folder):
         
         # Skip if the JSONL file already exists
         if os.path.exists(jsonl_path):
+            print(f"Skipping existing file: {jsonl_path}")
             continue
 
-        # Read the content of the text file
+        # Process the file only if it doesn't exist
         with open(text_path, 'r', encoding='utf-8') as file:
             text = file.read()
 
-        # Generate completions for the text
         completions = generate_completions(text)
 
-        # Write the completions to a JSONL file
         with open(jsonl_path, 'w', encoding='utf-8') as jsonl_file:
             for completion in completions:
-                jsonl_file.write(completion + '\n')  # Write the completion directly
+                jsonl_file.write(completion + '\n')
 
-        # Print a message indicating the JSONL file has been generated
         print(f"Generated {jsonl_path}")

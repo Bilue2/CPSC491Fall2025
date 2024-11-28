@@ -1,9 +1,0 @@
-{"prompt": "What does the US Federal Communications Commission (FCC) Emergency Call Routing Regulations Overview encompass?", "completion": "It provides information on compliance with US FCC laws regarding how Emergency Calls (911) are configured and routed in the US and non-US time zones. It includes laws like Kari's Law and Ray Baum's Act to enhance public safety by ensuring direct 911 dialing and dispatching location details for emergency responders."}
-```jsonl
-{"prompt": "What should you choose from the Gateway/Route List drop-down list for the configured pattern?", "completion": "An appropriate gateway, route, or trunk."}
-{"prompt": "What should you do after choosing an appropriate gateway, route, or trunk?", "completion": "Click Save."}
-{"prompt": "What must be acknowledged if the system is installed in a US timezone where FCC laws aren't applicable?", "completion": "Acknowledge the law and check the 'Disable any further notification regarding my911 obligation' checkbox in the Emergency Call Routing Regulations window and click Submit to disable the 911 notifications."}
-{"prompt": "What is preserved for future upgrades when laws aren't applicable?", "completion": "The configured settings are preserved for future upgrades."}
-{"prompt": "What happens to the alert notification and the Emergency Call Routing Regulations window when laws aren't applicable?", "completion": "The alert notification disappears on the homepage, and the Emergency Call Routing Regulations window gets disabled."}
-{"prompt": "What happens if a 911 route pattern is already created during upgrade or if the timezone changes from non-US to US timezone?", "completion": "The acknowledge page is grayed out."}
-```

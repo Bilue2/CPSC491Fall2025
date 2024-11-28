@@ -172,8 +172,8 @@ if __name__ == "__main__":
     setup_logging()
     
     try:
-        input_file = "dataset.jsonl"
-        output_file = "validated_dataset.jsonl"
+        input_file = "dataset-content.jsonl"
+        output_file = "validated_dataset-content.jsonl"
         use_openai = True  # Set to False to disable OpenAI fixes
         
         stats = validate_and_fix_jsonl(input_file, output_file, use_openai)
