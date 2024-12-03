@@ -77,3 +77,5 @@ for text_file in os.listdir(text_folder):
                 jsonl_file.write(completion + '\n')
 
         print(f"Generated {jsonl_path}")
+
+   

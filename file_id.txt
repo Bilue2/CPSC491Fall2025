@@ -12,8 +12,6 @@
 }
 
 
-
-
 # second file upload with full dataset in prompt and completion format
 {
   "id": "file-PtV5AVdQ7AsokfP3PV1u13",
@@ -27,6 +25,7 @@
 }
 
 
+# third file upload with full dataset in content format 
 {
   "id": "file-1K3Yrmo4JWe96SuhykWZqY",
   "bytes": 2536492,

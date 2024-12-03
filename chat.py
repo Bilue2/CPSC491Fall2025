@@ -1,3 +1,5 @@
+# This script will allow the user to chat with GPT 4o from the command line. 
+
 import os
 from openai import OpenAI 
 from dotenv import load_dotenv
