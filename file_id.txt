@@ -36,3 +36,15 @@
   "status": "processed",
   "status_details": null
 }
+
+# fourth upload with final dataset in chat format 
+{
+  "id": "file-7oU5x8944i5tvnMnmhwNxQ",
+  "bytes": 2014737,
+  "created_at": 1733259018,
+  "filename": "validated-final-dataset.jsonl",
+  "object": "file",
+  "purpose": "fine-tune",
+  "status": "processed",
+  "status_details": null
+}
