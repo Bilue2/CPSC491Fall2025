@@ -11,7 +11,7 @@ client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 
 # Create fine-tuning job
 response = client.fine_tuning.jobs.create(
-    training_file="file-1K3Yrmo4JWe96SuhykWZqY",
+    training_file="file-7oU5x8944i5tvnMnmhwNxQ",
     model="gpt-3.5-turbo"
 )
 

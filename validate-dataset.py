@@ -49,7 +49,7 @@ def validate_and_fix_jsonl(input_file: str, output_file: str) -> Dict[str, int]:
                     json_obj = json.loads(line)
                     
                     # Ensure the JSON object is in the correct format
-                    if isinstance(json_obj, dict):
+                    if isinstance(json_obj, dict) and "messages" in json_obj:
                         # Write the valid JSON object to the output file
                         outfile.write(json.dumps(json_obj) + '\n')
                         stats["valid_lines"] += 1
@@ -79,7 +79,7 @@ if __name__ == "__main__":
     
     try:
         input_file = "merged-final-dataset.jsonl"
-        output_file = "validated-final-dataset.jsonl"
+        output_file = "validated-final-datasetj-2.jsonl"
         
         stats = validate_and_fix_jsonl(input_file, output_file)
         logging.info("Process completed successfully")
