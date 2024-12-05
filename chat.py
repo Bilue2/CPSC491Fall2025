@@ -14,11 +14,11 @@ api_key = os.getenv("OPENAI_API_KEY"))
 def chat_with_gpt(prompt):
     try:
         completion  = client.chat.completions.create(
-            messages=[
-                {"role": "system", "content": "You are a helpful assistant. Help me with my math homework!"},
-                { "role": "user", "content": prompt}
+               messages=[
+                {"role": "system", "content": "You are a helpful assistant"},
             ],
-            model="gpt-4o"
+         
+            model="ft:gpt-4o-mini-2024-07-18:university-of-mary-washington::AaxgQQAe"
         )
         return completion
     except Exception as e:
