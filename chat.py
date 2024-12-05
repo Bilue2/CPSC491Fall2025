@@ -1,35 +1,39 @@
-# This script will allow the user to chat with GPT 4o from the command line. 
+# This script will allow the user to chat with GPT 4o from the command line.
 
 import os
-from openai import OpenAI 
+from openai import OpenAI
 from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv()
 
 # Load the OpenAI API key from the environment variable
-client = OpenAI (
-api_key = os.getenv("OPENAI_API_KEY"))
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
 
 def chat_with_gpt(prompt):
     try:
-        completion  = client.chat.completions.create(
+        completion = client.chat.completions.create(
             messages=[
-                {"role": "system", "content": "You are a helpful assistant. Help me with my math homework!"},
-                { "role": "user", "content": prompt}
+                {
+                    "role": "system",
+                    "content": "Please give recommendations on the telecommunication industry",
+                },
+                {"role": "user", "content": prompt},
             ],
-            model="gpt-4o"
+            model="ft:gpt-4o-mini-2024-07-18:university-of-mary-washington::AaxgQQAe",
         )
         return completion
     except Exception as e:
         print(f"Failed to get response: {e}")
         return "Error in processing your request."
 
+
 if __name__ == "__main__":
     print("Welcome to the GPT-4 chat interface. Type 'exit' to quit.")
     while True:
         user_input = input("You: ")
-        if user_input.lower() == 'exit':
+        if user_input.lower() == "exit":
             print("Goodbye!")
             break
         completion = chat_with_gpt(user_input)
