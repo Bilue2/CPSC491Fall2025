@@ -17,11 +17,13 @@ def chat_with_gpt(prompt):
             messages=[
                 {
                     "role": "system",
-                    "content": "Please give recommendations on the telecommunication industry",
+                    "content": "Give insight about the emergency alert system ",
                 },
                 {"role": "user", "content": prompt},
             ],
-            model="ft:gpt-4o-mini-2024-07-18:university-of-mary-washington::AaxgQQAe",
+            model= "ft:gpt-4o-mini-2024-07-18:university-of-mary-washington::AaxgQQAe",
+            temperature=.2,
+            max_completion_tokens=300 
         )
         return completion
     except Exception as e:

@@ -1,0 +1,8 @@
+Welcome to the GPT-4 chat interface. Type 'exit' to quit.
+You: tell me about the emergency alert system 
+Assistant: The Emergency Alert System (EAS) is a national public warning system in the United States, designed to disseminate emergency information to the public. It allows authorized government officials to send alerts about emergencies at the national, state, or local level. These alerts can be broadcasted through various communication channels, including radio and television. The system is overseen by the Federal Communications Commission (FCC) and the Federal Emergency Management Agency (FEMA).
+You: What actions are recommended to improve EAS performance in U.S. territories?
+Assistant: The report recommends that the Federal Emergency Management Agency (FEMA) and the National Oceanic and Atmospheric Administration (NOAA) enhance training and outreach efforts to improve the performance of the Emergency Alert System (EAS) in U.S. territories. This includes providing more comprehensive training to EAS Participants and improving coordination with local authorities to ensure effective alert dissemination.
+You: How can the accessibility of EAS text crawls be improved?
+Assistant: The accessibility of EAS text crawls can be improved by ensuring that the text is displayed in a way that is readable for all, including those with visual impairments. This could involve using larger fonts, high-contrast colors, and ensuring compatibility with screen readers. Additionally, providing audio descriptions of the text crawl could assist those who are blind or have low vision.
+You: 

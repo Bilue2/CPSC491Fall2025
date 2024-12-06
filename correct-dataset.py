@@ -38,7 +38,7 @@ def correct_jsonl_format(input_file: str, output_file: str):
                         # If the format is incorrect, use OpenAI API to correct it
                         response = client.chat.completions.create(
                             messages=[
-                                {"role": "system", "content": "You are a helpful assistant. Correct the format of this JSON object for GPT chat model training."},
+                                {"role": "system", "content": " Ensure the JSON object is in the correct format for training a chat model. Return the JSONL object, and nothing else. Here is an example of the correct format for training a gpt chat model:  {\"messages\": [{\"role\": \"system\", \"content\": \"You are an AI assistant specialized in telecommunications and emergency alert systems.\"}, {\"role\": \"user\", \"content\": \"Can you explain the recent FCC regulations regarding Wireless Emergency Alerts (WEAs)?\"}, {\"role\": \"assistant\", \"content\": \"In October 2023, the Federal Communications Commission adopted rules requiring Participating Commercial Mobile Service (CMS) Providers to support Wireless Emergency Alerts in thirteen languages, in addition to English and American Sign Language. This was part of the FCC's effort to make emergency alerts more accessible to diverse populations. More details can be found in the 2023 WEA Accessibility Report and Order.\"}]}"},
                                 {"role": "user", "content": json.dumps(json_obj)}
                             ],
                             model="gpt-4o"
@@ -54,8 +54,8 @@ def correct_jsonl_format(input_file: str, output_file: str):
         raise
 
 if __name__ == "__main__":
-    input_file = "merged-final-dataset.jsonl"
-    output_file = "corrected-dataset.jsonl"
+    input_file = "corrected-dataset.jsonl"
+    output_file = "corrected-dataset2.jsonl"
     
     correct_jsonl_format(input_file, output_file)
     print("Process completed successfully")
