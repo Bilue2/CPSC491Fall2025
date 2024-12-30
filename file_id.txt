@@ -49,6 +49,27 @@
   "status_details": null
 }
 
+# 5 - corrected-dataset2 in messages chat format 
+{
+  "id": "file-5x7hZDsciwLBGGXSatSpQN",
+  "bytes": 3281298,
+  "created_at": 1733494273,
+  "filename": "corrected-dataset2.jsonl",
+  "object": "file",
+  "purpose": "fine-tune",
+  "status": "processed",
+  "status_details": null
+}
 
-
+# 6 - corrected-dataset3 in messages format 
+{
+  "id": "file-WCnexBcwcCd4B2dMchxM5a",
+  "bytes": 3280815,
+  "created_at": 1733495955,
+  "filename": "corrected-dataset3.jsonl",
+  "object": "file",
+  "purpose": "fine-tune",
+  "status": "processed",
+  "status_details": null
+}
 

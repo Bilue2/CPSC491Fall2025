@@ -8,6 +8,6 @@ client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
 
 # List 10 fine-tuning jobs
-client.fine_tuning.jobs.list(limit=10)
+client.fine_tuning.jobs.list()
 
-
+ 
