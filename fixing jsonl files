@@ -9,7 +9,7 @@ load_dotenv()
 import os
 from openai import OpenAI
 
-client = OpenAI(api_key="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")  # Replace with your actual API key
+client = OpenAI(api_key="OPENAI_API_KEY")  # Replace with your actual API key
 
 print("API Key Loaded Successfully!")
 
