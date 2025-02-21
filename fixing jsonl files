@@ -1,0 +1,52 @@
+import os
+import time
+import json
+from openai import OpenAI
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
+import os
+from openai import OpenAI
+
+client = OpenAI(api_key="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")  # Replace with your actual API key
+
+print("API Key Loaded Successfully!")
+
+# Directory containing your JSONL files
+JSONL_DIR = "jsonl_files"  # Ensure all your JSONL files are in this directory
+import os
+import json
+
+# Path to the JSONL files
+jsonl_directory = "jsonl_files"
+
+def validate_and_fix_jsonl(file_path):
+    """ Validates and fixes JSONL files by ensuring proper JSON formatting. """
+    try:
+        fixed_lines = []
+        
+        with open(file_path, "r", encoding="utf-8") as file:
+            for line in file:
+                try:
+                    json_obj = json.loads(line.strip())  # Validate JSON
+                    fixed_lines.append(json.dumps(json_obj, ensure_ascii=False))  # Reformat JSON
+                except json.JSONDecodeError as e:
+                    print(f"❌ Invalid JSON line in {file_path}: {line.strip()} - Skipping this line.")
+        
+        if fixed_lines:
+            with open(file_path, "w", encoding="utf-8") as file:
+                file.write("\n".join(fixed_lines) + "\n")
+            print(f"✅ Fixed JSONL file: {file_path}")
+        else:
+            print(f"⚠️ No valid JSON lines found in {file_path}. Consider reviewing it manually.")
+
+    except Exception as e:
+        print(f"Error processing {file_path}: {e}")
+
+# Process all JSONL files in the directory
+for jsonl_file in os.listdir(jsonl_directory):
+    if jsonl_file.endswith(".jsonl"):
+        validate_and_fix_jsonl(os.path.join(jsonl_directory, jsonl_file))
+
+print("🚀 JSONL validation and fixing complete.")
