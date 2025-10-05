@@ -1,95 +1,219 @@
+"""
+Simple CLI chat that retrieves top-k documents from ChromaDB and answers with inline citations.
 
-import json
-from openai import OpenAI
-from chromadb import PersistentClient
-from config import get_api_key
+Usage:
+  python3 VectordB.chat_with_citations.py
 
-
-# === CONFIG ===
-openai_client = OpenAI(api_key=get_api_key()) # Initialize OpenAI client with API key
-persist_path = "./chroma_fcc_storage"
-collection_name = "fcc_documents"
-retrieval_limit = 5  # how many top results to use for context
-
-# === INIT CHROMADB ===
-chroma_client = PersistentClient(path=persist_path)
-collection = chroma_client.get_or_create_collection(name=collection_name)
-
-# === CHAT LOOP ===
-print("🔊 FCC Regulatory Assistant (type 'exit' to quit)\n")
-
-while True:
-    user_query = input("👤 You: ")
-
-    if user_query.lower() in ["exit", "quit"]:
-        print("👋 Goodbye!")
-        break
-
-    # Step 1: Embed the query with OpenAI
-    embed_response = openai_client.embeddings.create(
-        model="text-embedding-ada-002",
-        input=user_query
-    )
-    query_vector = embed_response.data[0].embedding
-
-    # Step 2: Query ChromaDB
-    results = collection.query(
-        query_embeddings=[query_vector],
-        n_results=retrieval_limit
-    )
-
-#the.
-    # Step 3: Combine top chunks into context with citations
-    context_chunks = results.get('documents', [[]])[0]
-    metadatas = results.get('metadatas', [[]])[0]
-
-    formatted_chunks = []
-    for i, (chunk, meta) in enumerate(zip(context_chunks, metadatas)):
-        # Defensive access to metadata keys
-        title = None
-        source = None
-        if isinstance(meta, dict):
-            title = meta.get("title") or meta.get("document_title") or meta.get("name")
-            source = meta.get("source") or meta.get("url") or meta.get("link")
-        # Fallbacks
-        title = title if title and title.strip() else f"Source {i+1}"
-        source = source if source and str(source).strip() else "N/A"
-        # Markdown link only if we have a plausible URL
-        if source.startswith("http://") or source.startswith("https://"):
-            header = f"[{title}]({source})"
-        else:
-            header = f"{title} (no link)"
-        formatted_chunks.append(f"{header}:\n{chunk}")
-
-    full_context = "\n\n".join(formatted_chunks) if formatted_chunks else "No retrieved context available. Answer only if you can based on prior instructions." 
-
-    # Step 4: Build prompt with explicit citation guidance
-    prompt = f"""You are an expert assistant for regulatory and emergency communication policy. 
-Using the following **source material (each item begins with its cited source name and optional link)**, answer the user's question clearly and accurately.
-
-Requirements:
-1. Only use the provided sources for factual claims.
-2. When making a claim, reference the source title in parentheses e.g., (Source 1) or (EAS Guide) that matches the heading.
-3. If the answer cannot be derived from the sources, state that explicitly and offer to refine the query.
-4. Do NOT hallucinate regulations or policies not present in the sources.
-
----SOURCE MATERIAL---
-{full_context}
-
----USER QUESTION---
-{user_query}
+Features:
+- Uses same embedding model as ingestion/chat (text-embedding-3-small).
+- Markdown-formatted source list with titles and links.
+- Graceful handling of missing context.
+- Explicit guardrails to avoid hallucinating beyond sources.
+- Retries on transient API errors.
 """
 
-    chat_response = openai_client.chat.completions.create(
-        model="gpt-4o",  # Latest GPT-4 model (you can also use "gpt-4" or "gpt-4-turbo")
-        messages=[
-            {"role": "system", "content": ""},
-            #You are a domain-specific assistant trained solely on emergency alert systems, public safety communications, cybersecurity policy, disaster response frameworks, and regulatory principles as defined in the embedded dataset. You must restrict your responses only to the information contained in the embedded data and refrain from generating answers outside this scope. Do not reference general knowledge, FCC responses, or unrelated domains (e.g., cooking, entertainment, etc.). Where relevant, relate insights strictly to ideas present in the embedded documents or clearly supported by them.
-            {"role": "user", "content": prompt}
-        ],
-        temperature=0.3
+from config import  get_api_key, get_serpapi_key
+import os
+import sys
+import time
+from typing import List, Dict, Tuple
+
+from chromadb import PersistentClient
+from openai import OpenAI
+from serpapi import GoogleSearch
+
+# === Configuration ===
+
+PERSIST_PATH = os.environ.get("CHROMA_PERSIST_PATH", "./chroma_storage")
+COLLECTION_NAME = os.environ.get("CHROMA_COLLECTION", "regulatory_papers")
+EMBED_MODEL = "text-embedding-3-small"
+SIMILARITY_TOP_K = 5
+MAX_RESPONSE_TOKENS = 500
+SERPAPI_API_KEY = os.environ.get("SERPAPI_API_KEY")
+FALLBACK_TEXT = "No information available in the dataset or external sources for that question."
+
+# === Clients ===
+
+client = PersistentClient(path=PERSIST_PATH)
+collection = client.get_or_create_collection(name=COLLECTION_NAME)
+
+def get_openai_client():
+    key = os.environ.get("OPENAI_API_KEY")
+    if not key:
+        print("❌ OPENAI_API_KEY not set")
+        sys.exit(1)
+    return OpenAI(api_key=key)
+
+openai_client = get_openai_client()
+
+# === Embedding & Retrieval ===
+
+def embed_text(text: str) -> List[float]:
+    resp = openai_client.embeddings.create(model=EMBED_MODEL, input=text)
+    return resp.data[0].embedding
+
+def retrieve_relevant_chunks(query: str, top_k: int = SIMILARITY_TOP_K) -> List[Dict]:
+    q_emb = embed_text(query)
+    res = collection.query(
+        query_embeddings=[q_emb],
+        n_results=top_k,
+        include=["documents", "metadatas"]
+    )
+    docs = res.get("documents", [[]])[0]
+    metas = res.get("metadatas", [[]])[0]
+    return [{"document": doc, "metadata": meta} for doc, meta in zip(docs, metas)]
+
+# === External Search ===
+
+def external_search(query: str, max_results: int = 3) -> List[Dict]:
+    if not SERPAPI_API_KEY:
+        return []
+
+    params = {
+        "q": query,
+        "engine": "google",
+        "api_key": SERPAPI_API_KEY,
+        "num": max_results,
+        "hl": "en",
+        "gl": "us",
+    }
+    try:
+        result = GoogleSearch(params).get_dict()
+    except Exception as e:
+        print(f"⚠️ SerpAPI error: {e}")
+        return []
+
+    external = []
+    for r in result.get("organic_results", [])[:max_results]:
+        url = r.get("link")
+        title = r.get("title") or "Untitled"
+        snippet = r.get("snippet") or ""
+        if url and "fcc.gov" not in url.lower():
+            external.append({"title": title, "url": url, "content": snippet})
+    return external
+
+def fetch_full_text(url: str) -> str:
+    try:
+        import requests
+        from bs4 import BeautifulSoup
+
+        resp = requests.get(url, timeout=10)
+        resp.raise_for_status()
+        soup = BeautifulSoup(resp.text, "html.parser")
+        return "\n".join(p.get_text().strip() for p in soup.find_all("p"))
+    except Exception:
+        return ""
+
+# === Prompt Construction ===
+
+def build_prompt(query: str,
+                 embedded_chunks: List[Dict],
+                 external_docs: List[Dict]) -> str:
+    system_instructions = (
+        "You are a helpful assistant that specializes in emergency alert systems, public safety communications, cybersecurity policy, "
+        "disaster response frameworks, and regulatory principles. You have access to embedded documents and relevant web sources.\n\n"
+        "Use the provided context to guide your answers, but you may also use your own knowledge when helpful. Be clear, accurate, and concise.\n\n"
+        "When you cite a document or source explicitly, include a markdown-formatted list at the end under the heading '📚 Sources:', with the title and link.\n\n"
+        "If there's no relevant context provided, still try to help the user based on what you know."
     )
 
-    # Step 5: Output the response
-    answer = chat_response.choices[0].message.content
-    print(f"\n🤖 FCC Bot: {answer}\n")
+    parts = []
+
+    for chunk in embedded_chunks:
+        meta = chunk["metadata"]
+        title = meta.get("title", "Embedded Document")
+        url = meta.get("source") or meta.get("url", "")
+        parts.append(f"Title: {title}" + (f" (URL: {url})" if url else "") + f"\n{chunk['document']}")
+
+    for d in external_docs:
+        title = d.get("title", "External Source")
+        url = d.get("url", "")
+        parts.append(f"Title: {title}" + (f" (URL: {url})" if url else "") + f"\n{d.get('content', '')}")
+
+    context_text = "\n---\n".join(parts)
+
+    return (
+        f"{system_instructions}\n\n"
+        f"Context:\n{context_text}\n\n"
+        f"Question: {query}\n"
+        f"Answer:"
+    )
+
+
+def parse_sources(answer: str) -> Tuple[str, List[Tuple[str, str]]]:
+    marker = "\n📚 Sources:"
+    if marker in answer:
+        ans_part, src_part = answer.split(marker, 1)
+        sources = []
+        for line in src_part.strip().splitlines():
+            if line.startswith("- [") and "](" in line:
+                try:
+                    title = line.split("[", 1)[1].split("]")[0]
+                    url = line.split("(", 1)[1].split(")")[0]
+                    sources.append((title, url))
+                except Exception:
+                    continue
+        return ans_part.strip(), sources
+    return answer.strip(), []
+
+# === Chat Loop ===
+
+def chat():
+    print("Chat Assistant (type 'exit' or Ctrl-C to quit)")
+
+    while True:
+        try:
+            user_input = input("\nYou: ").strip()
+            if user_input.lower() in ["exit", "quit"]:
+                print("Goodbye!")
+                break
+
+            embedded_chunks = retrieve_relevant_chunks(user_input)
+            external_docs = external_search(user_input)
+
+            for d in external_docs:
+                full = fetch_full_text(d["url"])
+                if full:
+                    d["content"] = full
+
+            if not embedded_chunks and not external_docs:
+                print(f"Assistant: {FALLBACK_TEXT}")
+                continue
+
+            prompt = build_prompt(user_input, embedded_chunks, external_docs)
+
+            response = None
+            for attempt in range(3):
+                try:
+                    response = openai_client.chat.completions.create(
+                        model="gpt-4o-mini",
+                        messages=[{"role": "system", "content": prompt}],
+                        max_tokens=MAX_RESPONSE_TOKENS,
+                        temperature=0.3,
+                    )
+                    break
+                except Exception as e:
+                    print(f"API error (attempt {attempt+1}): {e}")
+                    time.sleep(1)
+
+            if not response:
+                print("Assistant: Sorry, I couldn't get a response.")
+                continue
+
+            full_answer = response.choices[0].message.content.strip()
+            ans_text, sources = parse_sources(full_answer)
+
+            print(f"\nAssistant: {ans_text}\n")
+            print("📚 Sources:" if sources else "📚 Sources: None cited.")
+            for title, url in sources:
+                print(f"- [{title}]({url})")
+
+        except KeyboardInterrupt:
+            print("\nGoodbye!")
+            break
+        except Exception as e:
+            print(f"Error: {e}")
+            break
+
+if __name__ == "__main__":
+    chat()
