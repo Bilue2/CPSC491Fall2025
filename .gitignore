@@ -2,3 +2,6 @@
 .env
 __pycache__/
 *.pyc
+
+CHROMA_PERSIST_PATH = ./chroma_fcc_storage
+CHROMA_COLLECTION_NAME = fcc_collection
