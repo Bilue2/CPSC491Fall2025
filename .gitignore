@@ -5,3 +5,7 @@ __pycache__/
 
 CHROMA_PERSIST_PATH = ./chroma_fcc_storage
 CHROMA_COLLECTION_NAME = fcc_collection
+
+CHROMA_PATH = ../chroma_storage/chroma.sqlite3
+
+chroma_fcc_storage/chroma.sqlite3 
