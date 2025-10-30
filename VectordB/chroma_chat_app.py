@@ -50,7 +50,7 @@ def login_screen():
             st.session_state.authenticated = True
             st.success("✅ Login successful! Loading the assistant...")
             time.sleep(1)
-            st.experimental_rerun()
+            st.rerun()
         else:
             st.error("❌ Invalid username or password.")
 
@@ -65,7 +65,7 @@ if not st.session_state.authenticated:
 # Logout button
 if st.sidebar.button("🚪 Logout"):
     st.session_state.authenticated = False
-    st.experimental_rerun()
+    st.rerun()
 
 # Logging
 logging.basicConfig(level=logging.ERROR)
