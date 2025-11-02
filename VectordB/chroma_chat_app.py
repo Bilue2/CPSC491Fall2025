@@ -95,15 +95,12 @@ openai_client = OpenAI(api_key=OPENAI_API_KEY)
 # Initialize Chroma client (Cloud)
 # -------------------
 try:
-    os.environ["CHROMA_API_KEY"] = CHROMA_API_KEY
-    os.environ["CHROMA_TENANT"] = CHROMA_TENANT
-    os.environ["CHROMA_DATABASE"] = CHROMA_DATABASE
-
-    client = ChromaClient(Settings(chroma_api_impl="rest"))
+    # Initialize client
+    client = ChromaClient()
     collection = client.get_or_create_collection(name=COLLECTION_NAME)
-    st.sidebar.success("🟢 Using Chroma Cloud")
+    st.sidebar.success("🟢 Connected to Chroma Cloud")
 except Exception as e:
-    st.error("Failed to initialize Chroma client: " + str(e))
+    st.error(f"Failed to initialize Chroma client: {e}")
     logger.exception("Chroma init error")
     st.stop()
 
