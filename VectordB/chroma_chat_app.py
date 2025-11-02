@@ -277,7 +277,7 @@ prompt = st.text_area("Your question", height=100, placeholder="Type here...")
 if st.button("Ask") and prompt.strip():
     now = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
     st.session_state.messages.append({"role":"user","text":prompt,"time":now})
-    st.experimental_rerun()
+    st.rerun()
 
 # Display chat
 for msg in st.session_state.messages:
