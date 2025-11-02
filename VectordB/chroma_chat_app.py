@@ -119,12 +119,12 @@ try:
 except Exception:
     missing.append("APP_USERNAME / APP_PASSWORD")
 
-OPENAI_API_KEY = st.secrets.get(OPENAI_API_KEY)
+OPENAI_API_KEY = st.secrets.get("OPENAI_API_KEY")
 if not OPENAI_API_KEY:
     missing.append("OPENAI_API_KEY")
 
 # SerpAPI optional
-SERPAPI_API_KEY = st.secrets.get(SERPAPI_API_KEY, "")
+SERPAPI_API_KEY = st.secrets.get("SERPAPI_API_KEY", "")
 
 # Chroma Cloud optional credentials
 CHROMA_CLOUD_API_KEY = st.secrets.get("CHROMA_CLOUD_API_KEY")
