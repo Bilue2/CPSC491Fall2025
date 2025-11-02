@@ -17,8 +17,8 @@ from bs4 import BeautifulSoup
 # Optional: cloud-capable Chroma SDK
 # -------------------
 try:
-    from chromadb import HttpClient
-    from chromadb import PersistentClient
+    from chromadb import Client as ChromaClient
+    from chromadb.config import Settings
 except ImportError:
     st.error("ChromaDB SDK not installed. Run: pip install chromadb")
     st.stop()
