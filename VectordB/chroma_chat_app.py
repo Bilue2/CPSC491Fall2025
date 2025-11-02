@@ -26,8 +26,15 @@ except Exception:
 # Third-party SDKs that must be installed:
 # pip install chromadb openai serpapi beautifulsoup4 PyPDF2
 from openai import OpenAI
-from serpapi import GoogleSearch
-
+try:
+    from serpapi import GoogleSearch
+except ImportError:
+    try:
+        from serpapi.google_search import GoogleSearch
+    except ImportError:
+        GoogleSearch = None
+        st.error("SerpApi client import failed — check installation of `serpapi` or `google-search-results` package.")
+        
 # -------------------
 #  USER INSTRUCTIONS
 # -------------------
