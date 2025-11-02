@@ -97,21 +97,26 @@ openai_client = OpenAI(api_key=OPENAI_API_KEY)
 # -------------------
 client = None
 collection = None
+
 try:
     if CHROMA_CLOUD_API_KEY and CHROMA_CLOUD_TENANT and CHROMA_CLOUD_DATABASE:
-        client = HttpClient(
-            host="https://api.trychroma.com",
-            headers={
-                "Authorization": f"Bearer {CHROMA_CLOUD_API_KEY}",
-                "X-Chroma-Tenant": CHROMA_CLOUD_TENANT,
-                "X-Chroma-Database": CHROMA_CLOUD_DATABASE,
-            },
+        # Chroma Cloud setup
+        client = ChromaClient(
+            Settings(
+                chroma_api_impl="rest",
+                chroma_server_host="https://api.trychroma.com",
+                chroma_server_http_headers={
+                    "Authorization": f"Bearer {CHROMA_CLOUD_API_KEY}",
+                    "X-Chroma-Tenant": CHROMA_CLOUD_TENANT,
+                    "X-Chroma-Database": CHROMA_CLOUD_DATABASE,
+                },
+            )
         )
         st.sidebar.success("🟢 Using Chroma Cloud")
-    else:
-        client = PersistentClient(path="./chroma_storage")
-        st.sidebar.warning("⚠️ Using local Chroma storage (not persistent in cloud).")
+   
+    # Get or create your collection
     collection = client.get_or_create_collection(name=COLLECTION_NAME)
+
 except Exception as e:
     st.error("Failed to initialize Chroma client: " + str(e))
     logger.exception("Chroma init error")
