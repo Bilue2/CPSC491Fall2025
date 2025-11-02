@@ -38,7 +38,7 @@ logger = logging.getLogger(__name__)
 # -------------------
 st.markdown("""
 <style>
-.block-container { padding-top:1rem; padding-bottom:2rem; }
+.block-container { padding-top:4rem; padding-bottom:2rem; }
 .app-title { color:#002855; font-weight:700; font-size:28px; margin-bottom:4px; }
 section[data-testid="stSidebar"] { background-color:#F6FBFF; color:#002855; }
 .user-bubble { background:#E6EEF7;color:#002855;padding:12px 14px;border-radius:14px;margin:6px 0;max-width:78%;font-size:15px;box-shadow:0 1px 3px rgba(0,0,0,0.06);}
