@@ -124,7 +124,7 @@ def login_screen():
                 st.session_state.authenticated = True
                 st.success("Logged in — loading assistant...")
                 time.sleep(0.6)
-                st.experimental_rerun()
+                st.rerun()
             else:
                 st.error("Invalid username or password.")
     with col2:
