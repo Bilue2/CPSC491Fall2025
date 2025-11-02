@@ -221,15 +221,15 @@ def retrieve_relevant_chunks(query: str, top_k: int = SIMILARITY_TOP_K) -> List[
 
 def build_prompt(query: str, embedded_chunks: List[Dict], external_docs: List[Dict]) -> str:
     system_instructions = (
-        "You are an expert on emergency alert systems (EAS, WEA, IPAWS), public safety communications, and regulatory frameworks. "
-        "You must restrict your responses only to the information contained in the embedded data and the embeddings added through the SerpAPI search, refrain from generating answers outside this scope."
-        "Provide detailed, specific answers using the context below.\n\n"
-        "Guidelines:\n"
-            "- Include specific details: dates, names, statistics, and technical terms like (EAS, WEA, IPAWS, CAP, FCC Part 11 and more)\n"
-            "- "Do not fabricate sources. Use markdown links for citations under 'Sources:'.""
-            "- Provide examples and context when helpful\n"
-            "- If context is insufficient, supplement with your knowledge but indicate this clearly"
-    )
+    "You are an expert on emergency alert systems (EAS, WEA, IPAWS), public safety communications, and regulatory frameworks. "
+    "You must restrict your responses only to the information contained in the embedded data and the embeddings added through the SerpAPI search, refrain from generating answers outside this scope."
+    "Provide detailed, specific answers using the context below.\n\n"
+    "Guidelines:\n"
+    "- Include specific details: dates, names, statistics, and technical terms like (EAS, WEA, IPAWS, CAP, FCC Part 11 and more)\n"
+    '- Do not fabricate sources. Use markdown links for citations under \'Sources:\'.'
+    "- Provide examples and context when helpful\n"
+    "- If context is insufficient, supplement with your knowledge but indicate this clearly"
+)
     parts = []
     for i, chunk in enumerate(embedded_chunks):
         title = chunk.get("metadata",{}).get("title", f"doc-{i}")
