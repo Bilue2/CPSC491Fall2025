@@ -12,19 +12,9 @@ from typing import List, Dict, Tuple, Optional
 import streamlit as st
 import requests
 from bs4 import BeautifulSoup
-
 from openai import OpenAI
-
-# SerpAPI
-try:
-    from serpapi import GoogleSearch
-except ImportError:
-    GoogleSearch = None
-    st.error("SerpAPI client not available. Install `serpapi` package.")
-
-# Chroma
+from serpapi import GoogleSearch
 from chromadb import Client as ChromaClient
-from chromadb.config import Settings
 
 # -------------------
 # Streamlit page config
@@ -34,21 +24,22 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # -------------------
-# Custom CSS for chat style
+# Custom CSS for chat style & top logout
 # -------------------
 st.markdown("""
 <style>
-.block-container { padding-top:4rem; padding-bottom:2rem; }
-.app-title { color:#002855; font-weight:700; font-size:28px; margin-bottom:4px; }
-section[data-testid="stSidebar"] { background-color:#F6FBFF; color:#002855; }
-.user-bubble { background:#E6EEF7;color:#002855;padding:12px 14px;border-radius:14px;margin:6px 0;max-width:78%;font-size:15px;box-shadow:0 1px 3px rgba(0,0,0,0.06);}
-.assistant-bubble { background:linear-gradient(180deg,#002855,#003D7A);color:#ffffff;padding:12px 14px;border-radius:14px;margin:6px 0;max-width:78%;font-size:15px;box-shadow:0 2px 6px rgba(0,0,0,0.12);}
-.meta { font-size:12px;color:#7a869a;margin-top:6px;}
-.chat-row { display:flex; flex-direction: row; align-items:flex-start; }
-.chat-row.user { justify-content:flex-end; }
-.chat-row.assistant { justify-content:flex-start; }
-.stButton>button { background-color:#002855;color:white;border-radius:8px;padding:8px 12px;}
-.stButton>button:hover { background-color:#003D99;color:white;}
+header {display: flex; justify-content: space-between; align-items: center;}
+.block-container {padding-top: 4rem; padding-bottom: 2rem;}
+.app-title {color:#002855; font-weight:700; font-size:28px; margin-bottom:4px;}
+.user-bubble {background:#E6EEF7;color:#002855;padding:12px 14px;border-radius:14px;margin:6px 0;max-width:78%;font-size:15px;box-shadow:0 1px 3px rgba(0,0,0,0.06);}
+.assistant-bubble {background:linear-gradient(180deg,#002855,#003D7A);color:#ffffff;padding:12px 14px;border-radius:14px;margin:6px 0;max-width:78%;font-size:15px;box-shadow:0 2px 6px rgba(0,0,0,0.12);}
+.meta {font-size:12px;color:#7a869a;margin-top:6px;}
+.chat-row {display:flex; flex-direction: row; align-items:flex-start;}
+.chat-row.user {justify-content:flex-end;}
+.chat-row.assistant {justify-content:flex-start;}
+.stButton>button {background-color:#002855;color:white;border-radius:8px;padding:8px 12px;}
+.stButton>button:hover {background-color:#003D99;color:white;}
+.upload-section {margin-top:10px;}
 </style>
 """, unsafe_allow_html=True)
 
@@ -66,12 +57,13 @@ OPENAI_API_KEY = st.secrets.get("OPENAI_API_KEY")
 if not OPENAI_API_KEY:
     missing.append("OPENAI_API_KEY")
 
-SERPAPI_API_KEY = st.secrets.get("SERPAPI_API_KEY", "")
+SERPAPI_API_KEY = st.secrets.get("SERPAPI_API_KEY")
+if not SERPAPI_API_KEY:
+    missing.append("SERPAPI_API_KEY")
 
 CHROMA_API_KEY = st.secrets.get("CHROMA_API_KEY")
 CHROMA_TENANT = st.secrets.get("CHROMA_TENANT")
 CHROMA_DATABASE = st.secrets.get("CHROMA_DATABASE")
-
 COLLECTION_NAME = st.secrets.get("CHROMA_COLLECTION", "fcc_documents")
 
 if missing:
@@ -95,17 +87,15 @@ openai_client = OpenAI(api_key=OPENAI_API_KEY)
 # Initialize Chroma client (Cloud)
 # -------------------
 try:
-    # Initialize client
     client = ChromaClient()
     collection = client.get_or_create_collection(name=COLLECTION_NAME)
-    st.sidebar.success("🟢 Connected to Chroma Cloud")
 except Exception as e:
     st.error(f"Failed to initialize Chroma client: {e}")
     logger.exception("Chroma init error")
     st.stop()
 
 # -------------------
-# Auth state
+# Authentication
 # -------------------
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
@@ -136,14 +126,26 @@ if not st.session_state.authenticated:
     st.stop()
 
 # -------------------
-# Hash / embed / deduplicate
+# Logout Top Right
+# -------------------
+col1, col2 = st.columns([9,1])
+with col1:
+    st.markdown('<div class="app-title">📘 Regulatory AI Assistant</div>', unsafe_allow_html=True)
+with col2:
+    if st.button("Logout"):
+        st.session_state.authenticated = False
+        st.rerun()
+
+st.write("Ask questions about emergency alerts, public safety, cybersecurity, and regulation.")
+
+# -------------------
+# Helper Functions
 # -------------------
 def compute_hash(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 def document_exists(content_hash: str, url: Optional[str] = "") -> bool:
     try:
-        # simple metadata scan
         all_meta = collection.get(include=["metadatas", "ids"])
         metas = all_meta.get("metadatas", [])
         for meta in metas:
@@ -179,17 +181,22 @@ def ingest_document(title: str, url: str, content: str) -> bool:
         logger.exception("Failed to ingest: %s", e)
         return False
 
-# -------------------
-# External search
-# -------------------
 def external_search(query: str, max_results: int = 5) -> List[Dict]:
-    if not SERPAPI_API_KEY or GoogleSearch is None:
-        return []
+    params = {
+        "q": query,
+        "engine": "google",
+        "api_key": SERPAPI_API_KEY,
+        "num": max_results,
+    }
     try:
-        results = GoogleSearch({"q": query, "engine":"google","api_key":SERPAPI_API_KEY,"num":max_results}).get_dict()
+        results = GoogleSearch(params).get_dict()
         external = []
         for r in results.get("organic_results", []):
-            external.append({"title": r.get("title","Untitled"), "url": r.get("link",""), "content": r.get("snippet","")})
+            external.append({
+                "title": r.get("title","Untitled"),
+                "url": r.get("link",""),
+                "content": r.get("snippet","")
+            })
         return external
     except Exception as e:
         logger.exception("SerpAPI search failed: %s", e)
@@ -205,9 +212,6 @@ def fetch_full_text(url: str) -> str:
     except Exception:
         return ""
 
-# -------------------
-# Retrieval & prompt
-# -------------------
 def retrieve_relevant_chunks(query: str, top_k: int = SIMILARITY_TOP_K) -> List[Dict]:
     q_emb = embed_text(query)
     results = collection.query(query_embeddings=[q_emb], n_results=top_k, include=["documents","metadatas"])
@@ -216,6 +220,16 @@ def retrieve_relevant_chunks(query: str, top_k: int = SIMILARITY_TOP_K) -> List[
     return [{"document": d, "metadata": m} for d,m in zip(docs, metas)]
 
 def build_prompt(query: str, embedded_chunks: List[Dict], external_docs: List[Dict]) -> str:
+    system_instructions = (
+        "You are an expert on emergency alert systems (EAS, WEA, IPAWS), public safety communications, and regulatory frameworks. "
+        "You must restrict your responses only to the information contained in the embedded data and the embeddings added through the SerpAPI search, refrain from generating answers outside this scope."
+        "Provide detailed, specific answers using the context below.\n\n"
+        "Guidelines:\n"
+            "- Include specific details: dates, names, statistics, and technical terms like (EAS, WEA, IPAWS, CAP, FCC Part 11 and more)\n"
+            "- "Do not fabricate sources. Use markdown links for citations under 'Sources:'."
+            "- Provide examples and context when helpful\n"
+            "- If context is insufficient, supplement with your knowledge but indicate this clearly"
+    )
     parts = []
     for i, chunk in enumerate(embedded_chunks):
         title = chunk.get("metadata",{}).get("title", f"doc-{i}")
@@ -224,7 +238,7 @@ def build_prompt(query: str, embedded_chunks: List[Dict], external_docs: List[Di
     for d in external_docs:
         parts.append(f"EXTERNAL: {d.get('title','External')} (URL: {d.get('url','')})\n{d.get('content','')[:1500]}")
     context_text = "\n\n---\n\n".join(parts) if parts else "No context documents available."
-    return f"You are an assistant restricted to the content provided.\n\nContext:\n{context_text}\n\nQuestion: {query}\nAnswer (with markdown citations under 'Sources:'):"
+    return f"{system_instructions}\n\nContext:\n{context_text}\n\nQuestion: {query}\nAnswer (with markdown citations under 'Sources:'):"
 
 def parse_sources(answer: str) -> Tuple[str, List[Tuple[str,str]]]:
     marker = "\nSources:"
@@ -242,44 +256,34 @@ def parse_sources(answer: str) -> Tuple[str, List[Tuple[str,str]]]:
     return answer.strip(), []
 
 # -------------------
-# Sidebar: logout + upload
+# Chat Input + Upload UI
 # -------------------
-with st.sidebar:
-    st.header("Controls")
-    if st.button("Logout"):
-        st.session_state.authenticated = False
-        st.experimental_rerun()
-    st.markdown("---")
-    st.subheader("Ingest Documents")
-    uploaded = st.file_uploader("Upload (txt/pdf)", type=["txt","pdf"])
-    if uploaded:
-        try:
-            if uploaded.type=="application/pdf":
-                from PyPDF2 import PdfReader
-                import io
-                reader = PdfReader(io.BytesIO(uploaded.getvalue()))
-                text = "\n\n".join(page.extract_text() or "" for page in reader.pages)
-            else:
-                text = uploaded.getvalue().decode("utf-8",errors="ignore")
-            fake_url = f"uploaded://{uploaded.name}"
-            added = ingest_document(uploaded.name, fake_url, text)
-            st.success("Document ingested." if added else "Skipped (duplicate/too short)")
-        except Exception as e:
-            st.error("Ingest failed: "+str(e))
+st.markdown('<div class="upload-section">📄 Upload Documents (txt/pdf)</div>', unsafe_allow_html=True)
+uploaded = st.file_uploader("", type=["txt","pdf"])
+if uploaded:
+    try:
+        if uploaded.type=="application/pdf":
+            from PyPDF2 import PdfReader
+            import io
+            reader = PdfReader(io.BytesIO(uploaded.getvalue()))
+            text = "\n\n".join(page.extract_text() or "" for page in reader.pages)
+        else:
+            text = uploaded.getvalue().decode("utf-8",errors="ignore")
+        fake_url = f"uploaded://{uploaded.name}"
+        added = ingest_document(uploaded.name, fake_url, text)
+        st.success("Document ingested." if added else "Skipped (duplicate/too short)")
+    except Exception as e:
+        st.error("Ingest failed: "+str(e))
 
-# -------------------
-# Main chat UI
-# -------------------
-st.markdown('<div class="app-title">📘 Regulatory AI Assistant</div>', unsafe_allow_html=True)
-st.write("Ask questions about emergency alerts, public safety, cybersecurity, and regulation. Answers are restricted to embeddings and ingested content.")
-
-prompt = st.text_area("Your question", height=100, placeholder="Type here...")
+prompt = st.text_area("Type your question here...", height=80)
 if st.button("Ask") and prompt.strip():
     now = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
     st.session_state.messages.append({"role":"user","text":prompt,"time":now})
     st.rerun()
 
-# Display chat
+# -------------------
+# Display chat messages
+# -------------------
 for msg in st.session_state.messages:
     role = msg["role"]
     ts = msg.get("time","")
@@ -287,7 +291,9 @@ for msg in st.session_state.messages:
     row_class = "chat-row user" if role=="user" else "chat-row assistant"
     st.markdown(f'<div class="{row_class}"><div class="{bubble_class}">{msg["text"]}<div class="meta">{ts}</div></div></div>', unsafe_allow_html=True)
 
+# -------------------
 # Process latest user message
+# -------------------
 def process_latest():
     if not st.session_state.messages: return
     last = st.session_state.messages[-1]
@@ -296,11 +302,16 @@ def process_latest():
 
     with st.spinner("Retrieving context..."):
         embedded = retrieve_relevant_chunks(query)
-        external_docs = external_search(query) if SERPAPI_API_KEY else []
-        for d in external_docs:
-            full = fetch_full_text(d.get("url","")) or d.get("content","")
-            d["content"] = full
-            ingest_document(d.get("title","External"), d.get("url",""), full)
+        # If embeddings insufficient, use SERPAPI
+        if not embedded:
+            external_docs = external_search(query)
+            for d in external_docs:
+                full = fetch_full_text(d.get("url","")) or d.get("content","")
+                d["content"] = full
+                ingest_document(d.get("title","External"), d.get("url",""), full)
+            embedded = retrieve_relevant_chunks(query)
+        else:
+            external_docs = []
 
         prompt_text = build_prompt(query, embedded, external_docs)
 
