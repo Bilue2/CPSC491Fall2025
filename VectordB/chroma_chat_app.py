@@ -105,13 +105,13 @@ try:
             Settings(
                 chroma_api_impl="rest",
                 chroma_server_host="https://api.trychroma.com",
-                chroma_server_http_headers={
-                    "Authorization": f"Bearer {CHROMA_CLOUD_API_KEY}",
-                    "X-Chroma-Tenant": CHROMA_CLOUD_TENANT,
-                    "X-Chroma-Database": CHROMA_CLOUD_DATABASE,
-                },
+                chroma_api_key=CHROMA_CLOUD_API_KEY,       
+                chroma_tenant=CHROMA_CLOUD_TENANT,        
+                chroma_database=CHROMA_CLOUD_DATABASE     
             )
         )
+        
+        st.sidebar.success("🟢 Using Chroma Cloud")
         st.sidebar.success("🟢 Using Chroma Cloud")
    
     # Get or create your collection
