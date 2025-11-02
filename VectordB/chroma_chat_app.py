@@ -13,10 +13,6 @@ import streamlit as st
 import requests
 from bs4 import BeautifulSoup
 
-# Third-party SDKs that must be installed:
-# pip install chromadb openai serpapi beautifulsoup4 PyPDF2
-from openai import OpenAI
-from serpapi import GoogleSearch
 
 # NOTE: chromadb Cloud client API may change across releases.
 # The code below tries to use a Chroma client that accepts cloud credentials.
@@ -26,6 +22,11 @@ try:
 except Exception:
     ChromaClient = None
     PersistentClient = None
+
+# Third-party SDKs that must be installed:
+# pip install chromadb openai serpapi beautifulsoup4 PyPDF2
+from openai import OpenAI
+from serpapi import GoogleSearch
 
 # -------------------
 #  USER INSTRUCTIONS
