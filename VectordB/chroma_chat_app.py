@@ -226,7 +226,7 @@ def build_prompt(query: str, embedded_chunks: List[Dict], external_docs: List[Di
         "Provide detailed, specific answers using the context below.\n\n"
         "Guidelines:\n"
             "- Include specific details: dates, names, statistics, and technical terms like (EAS, WEA, IPAWS, CAP, FCC Part 11 and more)\n"
-            "- "Do not fabricate sources. Use markdown links for citations under 'Sources:'."
+            "- "Do not fabricate sources. Use markdown links for citations under 'Sources:'.""
             "- Provide examples and context when helpful\n"
             "- If context is insufficient, supplement with your knowledge but indicate this clearly"
     )
