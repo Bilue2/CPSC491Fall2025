@@ -8,6 +8,7 @@ import hashlib
 import logging
 from uuid import uuid4
 from typing import List, Dict, Tuple, Optional
+import io
 
 import streamlit as st
 import requests
@@ -15,6 +16,7 @@ from bs4 import BeautifulSoup
 from openai import OpenAI
 from serpapi import GoogleSearch
 from chromadb import Client as ChromaClient
+from PyPDF2 import PdfReader
 
 # -------------------
 # Streamlit page config
@@ -29,7 +31,7 @@ logger = logging.getLogger(__name__)
 st.markdown("""
 <style>
 header {display: flex; justify-content: space-between; align-items: center;}
-.block-container {padding-top: 4rem; padding-bottom: 2rem;}
+.block-container {padding-top: 1rem; padding-bottom: 2rem;}
 .app-title {color:#002855; font-weight:700; font-size:28px; margin-bottom:4px;}
 .user-bubble {background:#E6EEF7;color:#002855;padding:12px 14px;border-radius:14px;margin:6px 0;max-width:78%;font-size:15px;box-shadow:0 1px 3px rgba(0,0,0,0.06);}
 .assistant-bubble {background:linear-gradient(180deg,#002855,#003D7A);color:#ffffff;padding:12px 14px;border-radius:14px;margin:6px 0;max-width:78%;font-size:15px;box-shadow:0 2px 6px rgba(0,0,0,0.12);}
@@ -39,7 +41,10 @@ header {display: flex; justify-content: space-between; align-items: center;}
 .chat-row.assistant {justify-content:flex-start;}
 .stButton>button {background-color:#002855;color:white;border-radius:8px;padding:8px 12px;}
 .stButton>button:hover {background-color:#003D99;color:white;}
-.upload-section {margin-top:10px;}
+.input-row {display:flex; align-items:center; gap:5px; margin-top:10px;}
+.input-text {flex-grow:1; padding:10px; border-radius:8px; border:1px solid #ccc;}
+.upload-btn {background:#E6EEF7;color:#002855;border:none;border-radius:8px;padding:6px 10px; font-size:20px;}
+.send-btn {background:#002855;color:white;border:none;border-radius:8px;padding:8px 12px;}
 </style>
 """, unsafe_allow_html=True)
 
@@ -134,9 +139,9 @@ with col1:
 with col2:
     if st.button("Logout"):
         st.session_state.authenticated = False
-        st.rerun()
+        st.experimental_rerun()
 
-st.write("Ask questions about emergency alerts, public safety, cybersecurity, and regulation.")
+st.write("Ask questions about emergency alerts, public safety, cybersecurity, and regulation. Answers are restricted to embeddings and ingested content.")
 
 # -------------------
 # Helper Functions
@@ -182,21 +187,12 @@ def ingest_document(title: str, url: str, content: str) -> bool:
         return False
 
 def external_search(query: str, max_results: int = 5) -> List[Dict]:
-    params = {
-        "q": query,
-        "engine": "google",
-        "api_key": SERPAPI_API_KEY,
-        "num": max_results,
-    }
+    params = {"q": query, "engine": "google", "api_key": SERPAPI_API_KEY, "num": max_results}
     try:
         results = GoogleSearch(params).get_dict()
         external = []
         for r in results.get("organic_results", []):
-            external.append({
-                "title": r.get("title","Untitled"),
-                "url": r.get("link",""),
-                "content": r.get("snippet","")
-            })
+            external.append({"title": r.get("title","Untitled"), "url": r.get("link",""), "content": r.get("snippet","")})
         return external
     except Exception as e:
         logger.exception("SerpAPI search failed: %s", e)
@@ -221,15 +217,16 @@ def retrieve_relevant_chunks(query: str, top_k: int = SIMILARITY_TOP_K) -> List[
 
 def build_prompt(query: str, embedded_chunks: List[Dict], external_docs: List[Dict]) -> str:
     system_instructions = (
-    "You are an expert on emergency alert systems (EAS, WEA, IPAWS), public safety communications, and regulatory frameworks. "
-    "You must restrict your responses only to the information contained in the embedded data and the embeddings added through the SerpAPI search, refrain from generating answers outside this scope."
-    "Provide detailed, specific answers using the context below.\n\n"
-    "Guidelines:\n"
-    "- Include specific details: dates, names, statistics, and technical terms like (EAS, WEA, IPAWS, CAP, FCC Part 11 and more)\n"
-    '- Do not fabricate sources. Use markdown links for citations under \'Sources:\'.'
-    "- Provide examples and context when helpful\n"
-    "- If context is insufficient, supplement with your knowledge but indicate this clearly"
-)
+            "You are an expert on emergency alert systems (EAS, WEA, IPAWS), public safety communications, and regulatory frameworks. "
+            "You must restrict your responses only to the information contained in the embedded data and the embeddings added through the SerpAPI search, refrain from generating answers outside this scope."
+            "Provide detailed, specific answers using the context below.\n\n"
+            "Guidelines:\n"
+            "- Include specific details: dates, names, statistics, and technical terms like (EAS, WEA, IPAWS, CAP, FCC Part 11 and more)\n"
+            '- Do not fabricate sources. Use markdown links for citations under \'Sources:\'.'
+            "- Provide examples and context when helpful\n"
+            "- If context is insufficient, supplement with your knowledge but indicate this clearly"
+        )
+    
     parts = []
     for i, chunk in enumerate(embedded_chunks):
         title = chunk.get("metadata",{}).get("title", f"doc-{i}")
@@ -256,33 +253,7 @@ def parse_sources(answer: str) -> Tuple[str, List[Tuple[str,str]]]:
     return answer.strip(), []
 
 # -------------------
-# Chat Input + Upload UI
-# -------------------
-st.markdown('<div class="upload-section">📄 Upload Documents (txt/pdf)</div>', unsafe_allow_html=True)
-uploaded = st.file_uploader("", type=["txt","pdf"])
-if uploaded:
-    try:
-        if uploaded.type=="application/pdf":
-            from PyPDF2 import PdfReader
-            import io
-            reader = PdfReader(io.BytesIO(uploaded.getvalue()))
-            text = "\n\n".join(page.extract_text() or "" for page in reader.pages)
-        else:
-            text = uploaded.getvalue().decode("utf-8",errors="ignore")
-        fake_url = f"uploaded://{uploaded.name}"
-        added = ingest_document(uploaded.name, fake_url, text)
-        st.success("Document ingested." if added else "Skipped (duplicate/too short)")
-    except Exception as e:
-        st.error("Ingest failed: "+str(e))
-
-prompt = st.text_area("Type your question here...", height=80)
-if st.button("Ask") and prompt.strip():
-    now = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
-    st.session_state.messages.append({"role":"user","text":prompt,"time":now})
-    st.rerun()
-
-# -------------------
-# Display chat messages
+# Display chat history with scroll anchor
 # -------------------
 for msg in st.session_state.messages:
     role = msg["role"]
@@ -291,17 +262,65 @@ for msg in st.session_state.messages:
     row_class = "chat-row user" if role=="user" else "chat-row assistant"
     st.markdown(f'<div class="{row_class}"><div class="{bubble_class}">{msg["text"]}<div class="meta">{ts}</div></div></div>', unsafe_allow_html=True)
 
+# Scroll anchor
+st.markdown('<div id="bottom"></div>', unsafe_allow_html=True)
+st.markdown("""
+<script>
+var element = document.getElementById("bottom");
+if(element){element.scrollIntoView({behavior: "smooth"});}
+</script>
+""", unsafe_allow_html=True)
+
+# -------------------
+# Bottom input + upload popup
+# -------------------
+st.markdown("<br>", unsafe_allow_html=True)
+col_upload, col_input, col_send = st.columns([1,8,1])
+uploaded_file = None
+
+with col_upload:
+    # Use expander as a pseudo-popup
+    with st.expander("➕ Upload document", expanded=False):
+        uploaded_file = st.file_uploader("Choose a file (txt/pdf)", type=["txt","pdf"], key="upload_inline")
+
+with col_input:
+    user_prompt = st.text_input("", placeholder="Type your question here...", key="chat_input")
+
+with col_send:
+    if st.button("Send"):
+        if user_prompt:
+            now = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
+            st.session_state.messages.append({"role":"user","text":user_prompt,"time":now})
+            st.experimental_rerun()
+
+# -------------------
+# Process uploaded file
+# -------------------
+if uploaded_file:
+    try:
+        if uploaded_file.type=="application/pdf":
+            reader = PdfReader(io.BytesIO(uploaded_file.getvalue()))
+            text = "\n\n".join(page.extract_text() or "" for page in reader.pages)
+        else:
+            text = uploaded_file.getvalue().decode("utf-8", errors="ignore")
+        fake_url = f"uploaded://{uploaded_file.name}"
+        added = ingest_document(uploaded_file.name, fake_url, text)
+        st.success("Document ingested." if added else "Skipped (duplicate/too short)")
+    except Exception as e:
+        st.error(f"Upload failed: {e}")
+        
 # -------------------
 # Process latest user message
 # -------------------
 def process_latest():
     if not st.session_state.messages: return
     last = st.session_state.messages[-1]
-    if last["role"]!="user": return
+    if last["role"] != "user": return
     query = last["text"]
 
     with st.spinner("Retrieving context..."):
         embedded = retrieve_relevant_chunks(query)
+        external_docs = []
         # If embeddings insufficient, use SERPAPI
         if not embedded:
             external_docs = external_search(query)
@@ -310,8 +329,6 @@ def process_latest():
                 d["content"] = full
                 ingest_document(d.get("title","External"), d.get("url",""), full)
             embedded = retrieve_relevant_chunks(query)
-        else:
-            external_docs = []
 
         prompt_text = build_prompt(query, embedded, external_docs)
 
@@ -332,7 +349,7 @@ def process_latest():
         ans_text += "\n\n**Sources:**\n" + "\n".join(f"- [{t}]({u})" for t,u in sources)
 
     st.session_state.messages.append({"role":"assistant","text":ans_text,"time":datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")})
-    st.rerun()
+    st.experimental_rerun()
 
 if st.session_state.messages and st.session_state.messages[-1]["role"]=="user":
     process_latest()
