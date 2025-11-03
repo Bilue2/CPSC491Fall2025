@@ -15,7 +15,7 @@ from PyPDF2 import PdfReader
 import chromadb
 
 # -------------------
-# Streamlit page config
+# Streamlit Config
 # -------------------
 st.set_page_config(page_title="Regulatory AI Assistant", page_icon="📘", layout="wide")
 logging.basicConfig(level=logging.INFO)
@@ -26,69 +26,113 @@ logger = logging.getLogger(__name__)
 # -------------------
 st.markdown("""
 <style>
-/* Header */
-header {display:flex; justify-content:space-between; align-items:center; padding:10px 20px;}
-.app-title {color:#002855; font-weight:700; font-size:28px; margin:0;}
-.logout-btn {background:#002855;color:white;border-radius:8px;padding:6px 12px;border:none;}
-.logout-btn:hover {background:#003D99;}
-
-/* Chat container */
-.chat-container {
-    display:flex;
-    flex-direction:column;
-    height: calc(100vh - 160px);
-    overflow-y:auto;
-    padding: 10px 20px;
-    gap: 6px;
+/* ===== Sticky Header ===== */
+.sticky-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    padding: 14px 20px;
+    border-bottom: 1px solid #ddd;
+    z-index: 1000;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
-.chat-row {display:flex; align-items:flex-start;}
-.chat-row.user {justify-content:flex-end;}
-.chat-row.assistant {justify-content:flex-start;}
-.user-bubble {background:#E6EEF7;color:#002855;padding:12px 14px;border-radius:14px;margin:4px 0;max-width:78%;font-size:16px;word-break:break-word;box-shadow:0 1px 3px rgba(0,0,0,0.06);}
-.assistant-bubble {background:linear-gradient(180deg,#002855,#003D7A);color:#ffffff;padding:12px 14px;border-radius:14px;margin:4px 0;max-width:78%;font-size:16px;word-break:break-word;box-shadow:0 2px 6px rgba(0,0,0,0.12);}
-.meta {font-size:12px;color:#7a869a;margin-top:4px;}
-.highlight {background-color: #FFF176; padding: 2px 4px; border-radius:3px;}
+.header-left { display: flex; flex-direction: column; }
+.app-title { color: #002855; font-weight: 700; font-size: 24px; margin: 0; }
+.app-subtitle { color: #4f5d75; font-size: 14px; margin: 2px 0 0 0; }
+.logout-btn { background: #002855; color: white; border-radius: 8px; padding: 6px 12px; border: none; font-size: 14px; }
+.logout-btn:hover { background: #003D99; }
 
-/* Fixed input row */
-.fixed-input {
+/* ===== Scrollable Chat ===== */
+.chat-container {
+    position: absolute;
+    top: 90px;      /* below header */
+    bottom: 100px;  /* above footer */
+    left: 0;
+    right: 0;
+    overflow-y: auto;
+    padding: 15px 20px 20px 20px;
+}
+.chat-row { display: flex; align-items: flex-start; margin-bottom: 6px; }
+.chat-row.user { justify-content: flex-end; }
+.chat-row.assistant { justify-content: flex-start; }
+.user-bubble {
+    background: #E6EEF7; color: #002855;
+    padding: 12px 14px; border-radius: 14px;
+    max-width: 78%; font-size: 15px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.assistant-bubble {
+    background: linear-gradient(180deg,#002855,#003D7A); color: white;
+    padding: 12px 14px; border-radius: 14px;
+    max-width: 78%; font-size: 15px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+}
+.meta { font-size: 11px; color: #7a869a; margin-top: 4px; }
+
+/* ===== Fixed Footer Input ===== */
+.fixed-footer {
     position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
-    background:white;
-    padding:10px 20px;
-    border-top:1px solid #ddd;
-    z-index:100;
-    display:flex;
-    gap:5px;
-    align-items:center;
+    background: white;
+    border-top: 1px solid #ddd;
+    padding: 10px 20px;
+    z-index: 1001;
 }
-.input-text {flex-grow:1; padding:10px; border-radius:8px; border:1px solid #ccc; resize:none;}
+.footer-inner {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.plus-btn {
+    background: #E6EEF7; color: #002855; border: none;
+    border-radius: 50%; width: 36px; height: 36px;
+    font-size: 20px; line-height: 1;
+}
+.input-text {
+    flex-grow: 1;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    resize: none;
+    font-size: 14px;
+}
+.send-btn {
+    background: #002855; color: white;
+    border: none; border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 14px;
+}
+.upload-area {
+    display: none;
+    margin-top: 8px;
+}
+.upload-area.show {
+    display: block;
+}
 
-/* Upload button */
-.upload-btn {background:#E6EEF7;color:#002855;border:none;border-radius:8px;padding:6px 10px; font-size:16px;}
-.send-btn {background:#002855;color:white;border:none;border-radius:8px;padding:8px 14px;font-size:16px;}
-
-/* Collapsible long messages */
-.collapsible {cursor:pointer;}
-.collapsible-content {display:none; white-space: pre-wrap;}
-
-/* Responsive */
-@media (max-width:600px){
-    .fixed-input {flex-direction:column; gap:5px;}
-    .input-text {width:100%;}
-    .chat-container {padding:10px;}
+/* Small screens */
+@media (max-width: 600px){
+  .footer-inner { flex-direction: column; align-items: stretch; }
+  .input-text { width: 100%; }
 }
 </style>
+
 <script>
-function toggleMessage(id){
-    var content = document.getElementById(id);
-    if(content.style.display==="none"){content.style.display="block";}
-    else{content.style.display="none";}
+function toggleUpload() {
+  var area = window.parent.document.querySelector('.upload-area');
+  if (area) {
+    if (area.classList.contains('show')) area.classList.remove('show');
+    else area.classList.add('show');
+  }
 }
 </script>
 """, unsafe_allow_html=True)
-
 # -------------------
 # Load secrets
 # -------------------
@@ -153,7 +197,7 @@ def login_screen():
                 st.session_state.authenticated = True
                 st.success("Logged in — loading assistant...")
                 time.sleep(0.5)
-                st.experimental_rerun()
+                st.rerun()
             else: st.error("Invalid username or password.")
     with col2:
         if st.button("Exit"): st.stop()
@@ -170,7 +214,7 @@ with col1: st.markdown('<div class="app-title">📘 Regulatory AI Assistant</div
 with col2:
     if st.button("Logout", key="logout", help="Logout user"):
         st.session_state.authenticated = False
-        st.experimental_rerun()
+        st.rerun()
 
 st.write("Ask questions about emergency alerts, public safety, cybersecurity, and regulation.")
 
@@ -272,37 +316,44 @@ def highlight_keywords(text: str, keywords: List[str]) -> str:
     return text
 
 # -------------------
-# Display chat messages
+# Chat Display
 # -------------------
-chat_container = st.container()
-with chat_container:
-    for i, msg in enumerate(st.session_state.messages):
-        role = msg["role"]; ts = msg.get("time","")
-        bubble_class = "user-bubble" if role=="user" else "assistant-bubble"
-        row_class = "chat-row user" if role=="user" else "chat-row assistant"
-
-        text = msg["text"]
-        if role=="assistant" and len(text)>600:
-            msg_id = f"msg-{i}"
-            text_display = f'<div class="collapsible" onclick="toggleMessage(\'{msg_id}\')">Show/Hide answer...</div><div id="{msg_id}" class="collapsible-content">{text}</div>'
-        else: text_display = text
-
-        st.markdown(f'<div class="{row_class}"><div class="{bubble_class}">{text_display}<div class="meta">{ts}</div></div></div>', unsafe_allow_html=True)
-
-# -------------------
-# Fixed input row
-# -------------------
-st.markdown('<div class="fixed-input">', unsafe_allow_html=True)
-col_upload, col_input, col_send = st.columns([1,8,1])
-uploaded_file = col_upload.file_uploader("", type=["txt","pdf"], label_visibility="collapsed")
-user_prompt = col_input.text_area("Type your question here...", key="chat_input", height=50, label_visibility="collapsed")
-
-if col_send.button("Send"):
-    if user_prompt.strip():
-        now = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
-        st.session_state.messages.append({"role":"user","text":user_prompt,"time":now})
-        st.experimental_rerun()
+st.markdown('<div class="chat-container">', unsafe_allow_html=True)
+for msg in st.session_state.messages:
+    cls = "user-bubble" if msg["role"]=="user" else "assistant-bubble"
+    row = "chat-row user" if msg["role"]=="user" else "chat-row assistant"
+    st.markdown(f'<div class="{row}"><div class="{cls}">{msg["text"]}<div class="meta">{msg.get("time","")}</div></div></div>', unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
+
+# -------------------
+# Fixed Footer Input
+# -------------------
+st.markdown("""
+<div class="fixed-footer">
+  <div class="footer-inner">
+    <button class="plus-btn" onclick="toggleUpload()">+</button>
+    <textarea class="input-text" placeholder="Type your question..." id="chat_input"></textarea>
+    <button class="send-btn" onclick="window.parent.postMessage({type:'send'}, '*')">Send</button>
+  </div>
+  <div class="upload-area">
+""", unsafe_allow_html=True)
+
+uploaded_file = st.file_uploader("Upload document", type=["pdf","txt"], label_visibility="collapsed")
+
+st.markdown("</div></div>", unsafe_allow_html=True)
+
+if uploaded_file:
+    try:
+        if uploaded_file.type=="application/pdf":
+            reader = PdfReader(io.BytesIO(uploaded_file.getvalue()))
+            text = "\n\n".join(page.extract_text() or "" for page in reader.pages)
+        else:
+            text = uploaded_file.getvalue().decode("utf-8", errors="ignore")
+        fake_url = f"uploaded://{uploaded_file.name}"
+        ingest_document(uploaded_file.name, fake_url, text)
+        st.success(f"Uploaded {uploaded_file.name}")
+    except Exception as e:
+        st.error(f"Upload failed: {e}")
 
 # -------------------
 # Process uploaded file
