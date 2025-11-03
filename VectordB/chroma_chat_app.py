@@ -49,7 +49,7 @@ header {display: flex; justify-content: space-between; align-items: center;}
 .chat-container {
     display: flex;
     flex-direction: column;
-    height: calc(100vh - 120px);  /* Full viewport minus header+input */
+    max-height: 65vh;
     overflow-y: auto;
     padding: 10px 20px;
 }
