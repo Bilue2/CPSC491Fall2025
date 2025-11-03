@@ -326,21 +326,27 @@ for msg in st.session_state.messages:
 st.markdown('</div>', unsafe_allow_html=True)
 
 # -------------------
-# Fixed Footer Input
+# Fixed input row
 # -------------------
-st.markdown("""
-<div class="fixed-footer">
-  <div class="footer-inner">
-    <button class="plus-btn" onclick="toggleUpload()">+</button>
-    <textarea class="input-text" placeholder="Type your question..." id="chat_input"></textarea>
-    <button class="send-btn" onclick="window.parent.postMessage({type:'send'}, '*')">Send</button>
-  </div>
-  <div class="upload-area">
-""", unsafe_allow_html=True)
+st.markdown('<div class="fixed-input">', unsafe_allow_html=True)
+with st.form(key="chat_form", clear_on_submit=True):
+    col_upload, col_input, col_send = st.columns([1, 8, 1])
+    uploaded_file = col_upload.file_uploader("", type=["txt", "pdf"], label_visibility="collapsed")
+    user_prompt = col_input.text_area(
+        "Type your question here...",
+        key="chat_input",
+        height=50,
+        label_visibility="collapsed",
+        placeholder="Type your question and press Enter to send (Shift+Enter for new line)"
+    )
+    submitted = col_send.form_submit_button("Send")
 
-uploaded_file = st.file_uploader("Upload document", type=["pdf","txt"], label_visibility="collapsed")
+if submitted and user_prompt.strip():
+    now = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
+    st.session_state.messages.append({"role": "user", "text": user_prompt, "time": now})
+    st.experimental_rerun()
 
-st.markdown("</div></div>", unsafe_allow_html=True)
+st.markdown('</div>', unsafe_allow_html=True)
 
 if uploaded_file:
     try:
@@ -352,22 +358,6 @@ if uploaded_file:
         fake_url = f"uploaded://{uploaded_file.name}"
         ingest_document(uploaded_file.name, fake_url, text)
         st.success(f"Uploaded {uploaded_file.name}")
-    except Exception as e:
-        st.error(f"Upload failed: {e}")
-
-# -------------------
-# Process uploaded file
-# -------------------
-if uploaded_file:
-    try:
-        if uploaded_file.type=="application/pdf":
-            reader = PdfReader(io.BytesIO(uploaded_file.getvalue()))
-            text = "\n\n".join(page.extract_text() or "" for page in reader.pages)
-        else:
-            text = uploaded_file.getvalue().decode("utf-8", errors="ignore")
-        fake_url = f"uploaded://{uploaded_file.name}"
-        added = ingest_document(uploaded_file.name, fake_url, text)
-        st.success("Document ingested." if added else "Skipped (duplicate/too short)")
     except Exception as e:
         st.error(f"Upload failed: {e}")
 
