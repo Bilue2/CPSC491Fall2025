@@ -49,10 +49,9 @@ header {display: flex; justify-content: space-between; align-items: center;}
 .chat-container {
     display: flex;
     flex-direction: column;
-    max-height: 70vh;
+    height: calc(100vh - 120px);  /* Full viewport minus header+input */
     overflow-y: auto;
     padding: 10px 20px;
-    margin-bottom: 80px;
 }
 .fixed-input {
     position: fixed;
@@ -285,19 +284,10 @@ for msg in st.session_state.messages:
     st.markdown(f'<div class="{row_class}"><div class="{bubble_class}">{msg["text"]}<div class="meta">{ts}</div></div></div>', unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
 
-# Auto-scroll to latest message
-st.markdown("""
-<script>
-var chatBox = window.parent.document.querySelector('.chat-container');
-if (chatBox) { chatBox.scrollTop = chatBox.scrollHeight; }
-</script>
-""", unsafe_allow_html=True)
-
 # -------------------
 # Fixed bottom input
 # -------------------
 st.markdown('<div class="fixed-input">', unsafe_allow_html=True)
-
 col_upload, col_input, col_send = st.columns([1,8,1])
 uploaded_file = col_upload.file_uploader("Upload document", type=["txt","pdf"], label_visibility="collapsed")
 user_prompt = col_input.text_input("Type your question here...", key="chat_input", label_visibility="collapsed")
