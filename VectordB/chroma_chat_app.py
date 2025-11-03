@@ -49,10 +49,12 @@ header {display: flex; justify-content: space-between; align-items: center;}
 .chat-container {
     display: flex;
     flex-direction: column;
-    max-height: 65vh;
+    height: calc(100vh - 140px);  /* header + fixed input */
     overflow-y: auto;
     padding: 10px 20px;
+    gap: 6px;  /* spacing between messages */
 }
+
 .fixed-input {
     position: fixed;
     bottom: 0;
@@ -282,7 +284,16 @@ for msg in st.session_state.messages:
     bubble_class = "user-bubble" if role=="user" else "assistant-bubble"
     row_class = "chat-row user" if role=="user" else "chat-row assistant"
     st.markdown(f'<div class="{row_class}"><div class="{bubble_class}">{msg["text"]}<div class="meta">{ts}</div></div></div>', unsafe_allow_html=True)
-st.markdown('</div>', unsafe_allow_html=True)
+
+st.markdown("""
+<script>
+const chatContainer = window.parent.document.querySelector('.chat-container');
+if (chatContainer) {
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+}
+</script>
+""", unsafe_allow_html=True)
+
 
 # -------------------
 # Fixed bottom input
