@@ -298,7 +298,8 @@ with col_upload:
         uploaded_file = st.file_uploader("Choose a file (txt/pdf)", type=["txt","pdf"], key="upload_inline")
 
 with col_input:
-    user_prompt = st.text_input("", placeholder="Type your question here...", key="chat_input")
+    user_prompt = st.text_input("", placeholder="Type your question here...", key="chat_input_bottom")
+
 
 with col_send:
     if st.button("Send"):
