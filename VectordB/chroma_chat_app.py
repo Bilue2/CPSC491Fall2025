@@ -17,6 +17,7 @@ from openai import OpenAI
 from serpapi import GoogleSearch
 from chromadb import Client as ChromaClient
 from PyPDF2 import PdfReader
+import chromadb
 
 # -------------------
 # Streamlit page config
