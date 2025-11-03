@@ -344,7 +344,7 @@ with st.form(key="chat_form", clear_on_submit=True):
 if submitted and user_prompt.strip():
     now = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
     st.session_state.messages.append({"role": "user", "text": user_prompt, "time": now})
-    st.experimental_rerun()
+    st.rerun()
 
 st.markdown('</div>', unsafe_allow_html=True)
 
