@@ -1,14 +1,9 @@
 # chroma_chat_app.py
 # Run: streamlit run chroma_chat_app.py
 
-import os
-import time
-import datetime
-import hashlib
-import logging
+import os, time, datetime, hashlib, logging, io
 from uuid import uuid4
 from typing import List, Dict, Tuple, Optional
-import io
 
 import streamlit as st
 import requests
@@ -27,48 +22,71 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # -------------------
-# Custom CSS for chat style & top logout
+# Custom CSS
 # -------------------
 st.markdown("""
 <style>
-header {display: flex; justify-content: space-between; align-items: center;}
-.block-container {padding-top: 4rem; padding-bottom: 2rem;}
-.app-title {color:#002855; font-weight:700; font-size:28px; margin-bottom:4px;}
-.user-bubble {background:#E6EEF7;color:#002855;padding:12px 14px;border-radius:14px;margin:6px 0;max-width:78%;font-size:15px;box-shadow:0 1px 3px rgba(0,0,0,0.06);}
-.assistant-bubble {background:linear-gradient(180deg,#002855,#003D7A);color:#ffffff;padding:12px 14px;border-radius:14px;margin:6px 0;max-width:78%;font-size:15px;box-shadow:0 2px 6px rgba(0,0,0,0.12);}
-.meta {font-size:12px;color:#7a869a;margin-top:6px;}
-.chat-row {display:flex; flex-direction: row; align-items:flex-start;}
+/* Header */
+header {display:flex; justify-content:space-between; align-items:center; padding:10px 20px;}
+.app-title {color:#002855; font-weight:700; font-size:28px; margin:0;}
+.logout-btn {background:#002855;color:white;border-radius:8px;padding:6px 12px;border:none;}
+.logout-btn:hover {background:#003D99;}
+
+/* Chat container */
+.chat-container {
+    display:flex;
+    flex-direction:column;
+    height: calc(100vh - 160px);
+    overflow-y:auto;
+    padding: 10px 20px;
+    gap: 6px;
+}
+.chat-row {display:flex; align-items:flex-start;}
 .chat-row.user {justify-content:flex-end;}
 .chat-row.assistant {justify-content:flex-start;}
-.stButton>button {background-color:#002855;color:white;border-radius:8px;padding:8px 12px;}
-.stButton>button:hover {background-color:#003D99;color:white;}
-.input-row {display:flex; align-items:center; gap:5px; margin-top:10px;}
-.input-text {flex-grow:1; padding:10px; border-radius:8px; border:1px solid #ccc;}
-.upload-btn {background:#E6EEF7;color:#002855;border:none;border-radius:8px;padding:6px 10px; font-size:20px;}
-.send-btn {background:#002855;color:white;border:none;border-radius:8px;padding:8px 12px;}
-.chat-container {
-    display: flex;
-    flex-direction: column;
-    height: calc(100vh - 140px);  /* header + fixed input */
-    overflow-y: auto;
-    padding: 10px 20px;
-    gap: 6px;  /* spacing between messages */
-}
+.user-bubble {background:#E6EEF7;color:#002855;padding:12px 14px;border-radius:14px;margin:4px 0;max-width:78%;font-size:16px;word-break:break-word;box-shadow:0 1px 3px rgba(0,0,0,0.06);}
+.assistant-bubble {background:linear-gradient(180deg,#002855,#003D7A);color:#ffffff;padding:12px 14px;border-radius:14px;margin:4px 0;max-width:78%;font-size:16px;word-break:break-word;box-shadow:0 2px 6px rgba(0,0,0,0.12);}
+.meta {font-size:12px;color:#7a869a;margin-top:4px;}
+.highlight {background-color: #FFF176; padding: 2px 4px; border-radius:3px;}
 
+/* Fixed input row */
 .fixed-input {
     position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
-    background-color: white;
-    padding: 10px 20px;
-    border-top: 1px solid #ddd;
-    z-index: 100;
-    display: flex;
-    gap: 5px;
-    align-items: center;
+    background:white;
+    padding:10px 20px;
+    border-top:1px solid #ddd;
+    z-index:100;
+    display:flex;
+    gap:5px;
+    align-items:center;
+}
+.input-text {flex-grow:1; padding:10px; border-radius:8px; border:1px solid #ccc; resize:none;}
+
+/* Upload button */
+.upload-btn {background:#E6EEF7;color:#002855;border:none;border-radius:8px;padding:6px 10px; font-size:16px;}
+.send-btn {background:#002855;color:white;border:none;border-radius:8px;padding:8px 14px;font-size:16px;}
+
+/* Collapsible long messages */
+.collapsible {cursor:pointer;}
+.collapsible-content {display:none; white-space: pre-wrap;}
+
+/* Responsive */
+@media (max-width:600px){
+    .fixed-input {flex-direction:column; gap:5px;}
+    .input-text {width:100%;}
+    .chat-container {padding:10px;}
 }
 </style>
+<script>
+function toggleMessage(id){
+    var content = document.getElementById(id);
+    if(content.style.display==="none"){content.style.display="block";}
+    else{content.style.display="none";}
+}
+</script>
 """, unsafe_allow_html=True)
 
 # -------------------
@@ -82,13 +100,9 @@ except KeyError:
     missing.append("APP_USERNAME / APP_PASSWORD")
 
 OPENAI_API_KEY = st.secrets.get("OPENAI_API_KEY")
-if not OPENAI_API_KEY:
-    missing.append("OPENAI_API_KEY")
-
+if not OPENAI_API_KEY: missing.append("OPENAI_API_KEY")
 SERPAPI_API_KEY = st.secrets.get("SERPAPI_API_KEY")
-if not SERPAPI_API_KEY:
-    missing.append("SERPAPI_API_KEY")
-
+if not SERPAPI_API_KEY: missing.append("SERPAPI_API_KEY")
 CHROMA_API_KEY = st.secrets.get("CHROMA_API_KEY")
 CHROMA_TENANT = st.secrets.get("CHROMA_TENANT")
 CHROMA_DATABASE = st.secrets.get("CHROMA_DATABASE")
@@ -99,7 +113,7 @@ if missing:
     st.stop()
 
 # -------------------
-# App constants
+# Constants
 # -------------------
 EMBED_MODEL = "text-embedding-3-small"
 SIMILARITY_TOP_K = 5
@@ -107,18 +121,14 @@ MAX_RESPONSE_TOKENS = 500
 MIN_INGEST_LENGTH = 300
 
 # -------------------
-# Initialize OpenAI client
+# Initialize clients
 # -------------------
 openai_client = OpenAI(api_key=OPENAI_API_KEY)
-
-# -------------------
-# Initialize Chroma client (Cloud)
-# -------------------
 try:
-    client = chromadb.CloudClient(api_key=CHROMA_API_KEY, tenant = CHROMA_TENANT, database = CHROMA_DATABASE)
+    client = chromadb.CloudClient(api_key=CHROMA_API_KEY, tenant=CHROMA_TENANT, database=CHROMA_DATABASE)
     collection = client.get_or_create_collection(name=COLLECTION_NAME)
 except Exception as e:
-    st.error(f"Failed to initialize Chroma client: {e}")
+    st.error(f"Chroma init error: {e}")
     logger.exception("Chroma init error")
     st.stop()
 
@@ -129,38 +139,36 @@ if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
 if "messages" not in st.session_state:
     st.session_state.messages = []
+if "uploaded_files" not in st.session_state:
+    st.session_state.uploaded_files = []
 
 def login_screen():
     st.title("🔐 Regulatory Assistant Login")
-    st.markdown("Sign in to use the assistant.")
     username = st.text_input("Username")
     password = st.text_input("Password", type="password")
     col1, col2 = st.columns([1,1])
     with col1:
         if st.button("Login"):
-            if username == APP_USER and password == APP_PASS:
+            if username==APP_USER and password==APP_PASS:
                 st.session_state.authenticated = True
                 st.success("Logged in — loading assistant...")
-                time.sleep(0.6)
-                st.rerun()
-            else:
-                st.error("Invalid username or password.")
+                time.sleep(0.5)
+                st.experimental_rerun()
+            else: st.error("Invalid username or password.")
     with col2:
-        if st.button("Exit"):
-            st.stop()
+        if st.button("Exit"): st.stop()
 
 if not st.session_state.authenticated:
     login_screen()
     st.stop()
 
 # -------------------
-# Logout Top Right
+# Header + Logout
 # -------------------
 col1, col2 = st.columns([9,1])
-with col1:
-    st.markdown('<div class="app-title">📘 Regulatory AI Assistant</div>', unsafe_allow_html=True)
+with col1: st.markdown('<div class="app-title">📘 Regulatory AI Assistant</div>', unsafe_allow_html=True)
 with col2:
-    if st.button("Logout"):
+    if st.button("Logout", key="logout", help="Logout user"):
         st.session_state.authenticated = False
         st.experimental_rerun()
 
@@ -177,10 +185,8 @@ def document_exists(content_hash: str, url: Optional[str] = "") -> bool:
         all_meta = collection.get(include=["metadatas", "ids"])
         metas = all_meta.get("metadatas", [])
         for meta in metas:
-            if not isinstance(meta, dict):
-                continue
-            if meta.get("hash") == content_hash or (url and meta.get("source") == url):
-                return True
+            if not isinstance(meta, dict): continue
+            if meta.get("hash")==content_hash or (url and meta.get("source")==url): return True
         return False
     except Exception as e:
         logger.exception("document_exists failed: %s", e)
@@ -191,11 +197,9 @@ def embed_text(text: str) -> List[float]:
     return resp.data[0].embedding
 
 def ingest_document(title: str, url: str, content: str) -> bool:
-    if not content or len(content) < MIN_INGEST_LENGTH:
-        return False
+    if not content or len(content)<MIN_INGEST_LENGTH: return False
     content_hash = compute_hash(content)
-    if document_exists(content_hash, url):
-        return False
+    if document_exists(content_hash, url): return False
     try:
         embedding = embed_text(content)
         collection.add(
@@ -204,6 +208,7 @@ def ingest_document(title: str, url: str, content: str) -> bool:
             embeddings=[embedding],
             metadatas={"title": title, "source": url, "hash": content_hash, "retrieved": str(datetime.date.today())}
         )
+        st.session_state.uploaded_files.append(title)
         return True
     except Exception as e:
         logger.exception("Failed to ingest: %s", e)
@@ -213,29 +218,23 @@ def external_search(query: str, max_results: int = 5) -> List[Dict]:
     params = {"q": query, "engine": "google", "api_key": SERPAPI_API_KEY, "num": max_results}
     try:
         results = GoogleSearch(params).get_dict()
-        external = []
-        for r in results.get("organic_results", []):
-            external.append({"title": r.get("title","Untitled"), "url": r.get("link",""), "content": r.get("snippet","")})
-        return external
+        return [{"title": r.get("title","Untitled"), "url": r.get("link",""), "content": r.get("snippet","")} for r in results.get("organic_results",[])]
     except Exception as e:
         logger.exception("SerpAPI search failed: %s", e)
         return []
 
 def fetch_full_text(url: str) -> str:
     try:
-        resp = requests.get(url, timeout=10)
-        resp.raise_for_status()
+        resp = requests.get(url, timeout=10); resp.raise_for_status()
         soup = BeautifulSoup(resp.text, "html.parser")
-        paragraphs = [p.get_text().strip() for p in soup.find_all("p") if p.get_text().strip()]
-        return "\n\n".join(paragraphs)
-    except Exception:
-        return ""
+        return "\n\n".join(p.get_text().strip() for p in soup.find_all("p") if p.get_text().strip())
+    except Exception: return ""
 
 def retrieve_relevant_chunks(query: str, top_k: int = SIMILARITY_TOP_K) -> List[Dict]:
     q_emb = embed_text(query)
     results = collection.query(query_embeddings=[q_emb], n_results=top_k, include=["documents","metadatas"])
-    docs = results.get("documents", [[]])[0]
-    metas = results.get("metadatas", [[]])[0]
+    docs = results.get("documents",[[]])[0]
+    metas = results.get("metadatas",[[]])[0]
     return [{"document": d, "metadata": m} for d,m in zip(docs, metas)]
 
 def build_prompt(query: str, embedded_chunks: List[Dict], external_docs: List[Dict]) -> str:
@@ -248,7 +247,6 @@ def build_prompt(query: str, embedded_chunks: List[Dict], external_docs: List[Di
             "- Provide examples and context when helpful\n"
             "- If context is insufficient, supplement with your knowledge but indicate this clearly"
         )
-    
     parts = []
     for i, chunk in enumerate(embedded_chunks):
         title = chunk.get("metadata",{}).get("title", f"doc-{i}")
@@ -259,56 +257,54 @@ def build_prompt(query: str, embedded_chunks: List[Dict], external_docs: List[Di
     context_text = "\n\n---\n\n".join(parts) if parts else "No context documents available."
     return f"{system_instructions}\n\nContext:\n{context_text}\n\nQuestion: {query}\nAnswer (with markdown citations under 'Sources:'):"
 
-def parse_sources(answer: str) -> Tuple[str, List[Tuple[str,str]]]:
+def parse_sources(answer: str) -> Tuple[str,List[Tuple[str,str]]]:
     marker = "\nSources:"
     if marker in answer:
         ans_part, src_part = answer.split(marker,1)
         sources=[]
         for line in src_part.strip().splitlines():
             if line.startswith("- [") and "](" in line:
-                try:
-                    t = line.split("[",1)[1].split("]")[0]
-                    u = line.split("(",1)[1].split(")")[0]
-                    sources.append((t,u))
+                try: t,u=line.split("[",1)[1].split("]")[0], line.split("(",1)[1].split(")")[0]; sources.append((t,u))
                 except: continue
         return ans_part.strip(), sources
     return answer.strip(), []
 
-# -------------------
-# Display chat history
-# -------------------
-st.markdown('<div class="chat-container">', unsafe_allow_html=True)
-for msg in st.session_state.messages:
-    role = msg["role"]
-    ts = msg.get("time","")
-    bubble_class = "user-bubble" if role=="user" else "assistant-bubble"
-    row_class = "chat-row user" if role=="user" else "chat-row assistant"
-    st.markdown(f'<div class="{row_class}"><div class="{bubble_class}">{msg["text"]}<div class="meta">{ts}</div></div></div>', unsafe_allow_html=True)
-
-st.markdown("""
-<script>
-const chatContainer = window.parent.document.querySelector('.chat-container');
-if (chatContainer) {
-    chatContainer.scrollTop = chatContainer.scrollHeight;
-}
-</script>
-""", unsafe_allow_html=True)
-
+def highlight_keywords(text: str, keywords: List[str]) -> str:
+    for kw in keywords:
+        text = text.replace(kw, f'<span class="highlight">{kw}</span>')
+    return text
 
 # -------------------
-# Fixed bottom input
+# Display chat messages
+# -------------------
+chat_container = st.container()
+with chat_container:
+    for i, msg in enumerate(st.session_state.messages):
+        role = msg["role"]; ts = msg.get("time","")
+        bubble_class = "user-bubble" if role=="user" else "assistant-bubble"
+        row_class = "chat-row user" if role=="user" else "chat-row assistant"
+
+        text = msg["text"]
+        if role=="assistant" and len(text)>600:
+            msg_id = f"msg-{i}"
+            text_display = f'<div class="collapsible" onclick="toggleMessage(\'{msg_id}\')">Show/Hide answer...</div><div id="{msg_id}" class="collapsible-content">{text}</div>'
+        else: text_display = text
+
+        st.markdown(f'<div class="{row_class}"><div class="{bubble_class}">{text_display}<div class="meta">{ts}</div></div></div>', unsafe_allow_html=True)
+
+# -------------------
+# Fixed input row
 # -------------------
 st.markdown('<div class="fixed-input">', unsafe_allow_html=True)
 col_upload, col_input, col_send = st.columns([1,8,1])
-uploaded_file = col_upload.file_uploader("Upload document", type=["txt","pdf"], label_visibility="collapsed")
-user_prompt = col_input.text_input("Type your question here...", key="chat_input", label_visibility="collapsed")
+uploaded_file = col_upload.file_uploader("", type=["txt","pdf"], label_visibility="collapsed")
+user_prompt = col_input.text_area("Type your question here...", key="chat_input", height=50, label_visibility="collapsed")
 
 if col_send.button("Send"):
-    if user_prompt:
+    if user_prompt.strip():
         now = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
         st.session_state.messages.append({"role":"user","text":user_prompt,"time":now})
-        st.rerun()
-
+        st.experimental_rerun()
 st.markdown('</div>', unsafe_allow_html=True)
 
 # -------------------
@@ -326,6 +322,9 @@ if uploaded_file:
         st.success("Document ingested." if added else "Skipped (duplicate/too short)")
     except Exception as e:
         st.error(f"Upload failed: {e}")
+
+if st.session_state.uploaded_files:
+    st.info("Uploaded files: " + ", ".join(st.session_state.uploaded_files))
 
 # -------------------
 # Process latest user message
@@ -358,15 +357,15 @@ def process_latest():
                 temperature=0.2
             )
             ans_full = resp.choices[0].message.content.strip()
-        except Exception as e:
-            ans_full = f"Error generating response: {e}"
+        except Exception as e: ans_full = f"Error generating response: {e}"
 
     ans_text, sources = parse_sources(ans_full)
-    if sources:
-        ans_text += "\n\n**Sources:**\n" + "\n".join(f"- [{t}]({u})" for t,u in sources)
+    if sources: ans_text += "\n\n**Sources:**\n" + "\n".join(f"- [{t}]({u})" for t,u in sources)
+    keywords = query.split()
+    ans_text = highlight_keywords(ans_text, keywords)
 
     st.session_state.messages.append({"role":"assistant","text":ans_text,"time":datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")})
-    st.rerun()
+    st.experimental_rerun()
 
 if st.session_state.messages and st.session_state.messages[-1]["role"]=="user":
     process_latest()
