@@ -46,8 +46,27 @@ header {display: flex; justify-content: space-between; align-items: center;}
 .input-text {flex-grow:1; padding:10px; border-radius:8px; border:1px solid #ccc;}
 .upload-btn {background:#E6EEF7;color:#002855;border:none;border-radius:8px;padding:6px 10px; font-size:20px;}
 .send-btn {background:#002855;color:white;border:none;border-radius:8px;padding:8px 12px;}
-.chat-container {display: flex;flex-direction:column;height: 80vh;overflow-y: auto;padding: 10px 20px 100px;}
-.fixed-input {position: fixed;bottom: 0;left: 0;right: 0;background-color: white;padding: 10px 20px;border-top: 1px solid #ddd;z-index: 100;}
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    max-height: 70vh;
+    overflow-y: auto;
+    padding: 10px 20px;
+    margin-bottom: 80px;
+}
+.fixed-input {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: white;
+    padding: 10px 20px;
+    border-top: 1px solid #ddd;
+    z-index: 100;
+    display: flex;
+    gap: 5px;
+    align-items: center;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -144,7 +163,7 @@ with col2:
         st.session_state.authenticated = False
         st.experimental_rerun()
 
-st.write("Ask questions about emergency alerts, public safety, cybersecurity, and regulation. Answers are restricted to embeddings and ingested content.")
+st.write("Ask questions about emergency alerts, public safety, cybersecurity, and regulation.")
 
 # -------------------
 # Helper Functions
@@ -220,9 +239,8 @@ def retrieve_relevant_chunks(query: str, top_k: int = SIMILARITY_TOP_K) -> List[
 
 def build_prompt(query: str, embedded_chunks: List[Dict], external_docs: List[Dict]) -> str:
     system_instructions = (
-            "You are an expert on emergency alert systems (EAS, WEA, IPAWS), public safety communications, and regulatory frameworks. "
-            "You must restrict your responses only to the information contained in the embedded data and the embeddings added through the SerpAPI search, refrain from generating answers outside this scope."
-            "Provide detailed, specific answers using the context below.\n\n"
+            "You are an expert on emergency alert systems (EAS, WEA, IPAWS), public safety communications, and regulatory frameworks."
+            "Provide specific, detailed answers using the context below.\n\n"
             "Guidelines:\n"
             "- Include specific details: dates, names, statistics, and technical terms like (EAS, WEA, IPAWS, CAP, FCC Part 11 and more)\n"
             '- Do not fabricate sources. Use markdown links for citations under \'Sources:\'.'
@@ -259,30 +277,55 @@ def parse_sources(answer: str) -> Tuple[str, List[Tuple[str,str]]]:
 # Display chat history
 # -------------------
 st.markdown('<div class="chat-container">', unsafe_allow_html=True)
-
 for msg in st.session_state.messages:
     role = msg["role"]
     ts = msg.get("time","")
     bubble_class = "user-bubble" if role=="user" else "assistant-bubble"
     row_class = "chat-row user" if role=="user" else "chat-row assistant"
     st.markdown(f'<div class="{row_class}"><div class="{bubble_class}">{msg["text"]}<div class="meta">{ts}</div></div></div>', unsafe_allow_html=True)
+st.markdown('</div>', unsafe_allow_html=True)
 
+# Auto-scroll to latest message
+st.markdown("""
+<script>
+var chatBox = window.parent.document.querySelector('.chat-container');
+if (chatBox) { chatBox.scrollTop = chatBox.scrollHeight; }
+</script>
+""", unsafe_allow_html=True)
 
+# -------------------
+# Fixed bottom input
 # -------------------
 st.markdown('<div class="fixed-input">', unsafe_allow_html=True)
 
-col_upload, col_input, col_send = st.columns([1, 8, 1])
-uploaded_file = col_upload.file_uploader("Upload document", type=["pdf", "txt"], label_visibility="collapsed")
+col_upload, col_input, col_send = st.columns([1,8,1])
+uploaded_file = col_upload.file_uploader("Upload document", type=["txt","pdf"], label_visibility="collapsed")
 user_prompt = col_input.text_input("Type your question here...", key="chat_input", label_visibility="collapsed")
 
 if col_send.button("Send"):
     if user_prompt:
         now = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
-        st.session_state.messages.append({"role": "user", "text": user_prompt, "time": now})
+        st.session_state.messages.append({"role":"user","text":user_prompt,"time":now})
         st.rerun()
 
 st.markdown('</div>', unsafe_allow_html=True)
-   
+
+# -------------------
+# Process uploaded file
+# -------------------
+if uploaded_file:
+    try:
+        if uploaded_file.type=="application/pdf":
+            reader = PdfReader(io.BytesIO(uploaded_file.getvalue()))
+            text = "\n\n".join(page.extract_text() or "" for page in reader.pages)
+        else:
+            text = uploaded_file.getvalue().decode("utf-8", errors="ignore")
+        fake_url = f"uploaded://{uploaded_file.name}"
+        added = ingest_document(uploaded_file.name, fake_url, text)
+        st.success("Document ingested." if added else "Skipped (duplicate/too short)")
+    except Exception as e:
+        st.error(f"Upload failed: {e}")
+
 # -------------------
 # Process latest user message
 # -------------------
@@ -295,7 +338,6 @@ def process_latest():
     with st.spinner("Retrieving context..."):
         embedded = retrieve_relevant_chunks(query)
         external_docs = []
-        # If embeddings insufficient, use SERPAPI
         if not embedded:
             external_docs = external_search(query)
             for d in external_docs:
