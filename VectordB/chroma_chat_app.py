@@ -291,7 +291,7 @@ with col_send:
         if user_prompt:
             now = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
             st.session_state.messages.append({"role":"user","text":user_prompt,"time":now})
-            st.experimental_rerun()
+            st.rerun()
 
 # -------------------
 # Process uploaded file
@@ -349,7 +349,7 @@ def process_latest():
         ans_text += "\n\n**Sources:**\n" + "\n".join(f"- [{t}]({u})" for t,u in sources)
 
     st.session_state.messages.append({"role":"assistant","text":ans_text,"time":datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")})
-    st.experimental_rerun()
+    st.rerun()
 
 if st.session_state.messages and st.session_state.messages[-1]["role"]=="user":
     process_latest()
