@@ -282,48 +282,7 @@ if col_send.button("Send"):
         st.rerun()
 
 st.markdown('</div>', unsafe_allow_html=True)
-
-
-
-# -------------------
-# Bottom input + upload popup
-# -------------------
-st.markdown("<br>", unsafe_allow_html=True)
-col_upload, col_input, col_send = st.columns([1,8,1])
-uploaded_file = None
-
-with col_upload:
-    # Use expander as a pseudo-popup
-    with st.expander("➕ Upload document", expanded=False):
-        uploaded_file = st.file_uploader("Choose a file (txt/pdf)", type=["txt","pdf"], key="upload_inline")
-
-with col_input:
-    user_prompt = st.text_input("", placeholder="Type your question here...", key="chat_input_bottom")
-
-
-with col_send:
-    if st.button("Send"):
-        if user_prompt:
-            now = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
-            st.session_state.messages.append({"role":"user","text":user_prompt,"time":now})
-            st.rerun()
-
-# -------------------
-# Process uploaded file
-# -------------------
-if uploaded_file:
-    try:
-        if uploaded_file.type=="application/pdf":
-            reader = PdfReader(io.BytesIO(uploaded_file.getvalue()))
-            text = "\n\n".join(page.extract_text() or "" for page in reader.pages)
-        else:
-            text = uploaded_file.getvalue().decode("utf-8", errors="ignore")
-        fake_url = f"uploaded://{uploaded_file.name}"
-        added = ingest_document(uploaded_file.name, fake_url, text)
-        st.success("Document ingested." if added else "Skipped (duplicate/too short)")
-    except Exception as e:
-        st.error(f"Upload failed: {e}")
-        
+   
 # -------------------
 # Process latest user message
 # -------------------
