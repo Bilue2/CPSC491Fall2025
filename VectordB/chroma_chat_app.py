@@ -45,6 +45,8 @@ header {display: flex; justify-content: space-between; align-items: center;}
 .input-text {flex-grow:1; padding:10px; border-radius:8px; border:1px solid #ccc;}
 .upload-btn {background:#E6EEF7;color:#002855;border:none;border-radius:8px;padding:6px 10px; font-size:20px;}
 .send-btn {background:#002855;color:white;border:none;border-radius:8px;padding:8px 12px;}
+.chat-container {display: flex;flex-direction:column;height: 80vh;overflow-y: auto;padding: 10px 20px 100px;}
+.fixed-input {position: fixed;bottom: 0;left: 0;right: 0;background-color: white;padding: 10px 20px;border-top: 1px solid #ddd;z-index: 100;}
 </style>
 """, unsafe_allow_html=True)
 
@@ -253,8 +255,10 @@ def parse_sources(answer: str) -> Tuple[str, List[Tuple[str,str]]]:
     return answer.strip(), []
 
 # -------------------
-# Display chat history with scroll anchor
+# Display chat history
 # -------------------
+st.markdown('<div class="chat-container">', unsafe_allow_html=True)
+
 for msg in st.session_state.messages:
     role = msg["role"]
     ts = msg.get("time","")
@@ -262,14 +266,23 @@ for msg in st.session_state.messages:
     row_class = "chat-row user" if role=="user" else "chat-row assistant"
     st.markdown(f'<div class="{row_class}"><div class="{bubble_class}">{msg["text"]}<div class="meta">{ts}</div></div></div>', unsafe_allow_html=True)
 
-# Scroll anchor
-st.markdown('<div id="bottom"></div>', unsafe_allow_html=True)
-st.markdown("""
-<script>
-var element = document.getElementById("bottom");
-if(element){element.scrollIntoView({behavior: "smooth"});}
-</script>
-""", unsafe_allow_html=True)
+
+# -------------------
+st.markdown('<div class="fixed-input">', unsafe_allow_html=True)
+
+col_upload, col_input, col_send = st.columns([1, 8, 1])
+uploaded_file = col_upload.file_uploader("Upload document", type=["pdf", "txt"], label_visibility="collapsed")
+user_prompt = col_input.text_input("Type your question here...", key="chat_input", label_visibility="collapsed")
+
+if col_send.button("Send"):
+    if user_prompt:
+        now = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
+        st.session_state.messages.append({"role": "user", "text": user_prompt, "time": now})
+        st.rerun()
+
+st.markdown('</div>', unsafe_allow_html=True)
+
+
 
 # -------------------
 # Bottom input + upload popup
