@@ -346,8 +346,6 @@ def main():
                                     st.markdown("\n📚 **Sources:**")
                                     for title, url in sources:
                                         st.markdown(f"- [{title}]({url})")
-                                else:
-                                    st.markdown("\n📚 **Sources:** None cited.")
                                 
                                 # Add to chat history
                                 st.session_state.messages.append({
