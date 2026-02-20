@@ -34,7 +34,7 @@ load_dotenv()
 EMBED_MODEL = "text-embedding-3-small"
 EMBED_DIMENSIONS = 1536
 SIMILARITY_TOP_K = 5
-MAX_RESPONSE_TOKENS = 500
+MAX_RESPONSE_TOKENS = 5000
 FALLBACK_TEXT = "No information available in the dataset or external sources for that question."
 #RELEVANCE_THRESHOLD = 0.35
 
