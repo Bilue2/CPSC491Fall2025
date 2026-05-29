@@ -130,8 +130,13 @@ def retrieve(
     hinted_themes = set(_query_hint_themes(query))
 
     rows: List[Dict[str, Any]] = []
+    MIN_SCORE = 0.78
     for m in matches:
         mdict = _match_to_dict(m)
+        score = float(mdict.get("score", 0.0))
+
+        if score < MIN_SCORE:
+            continue
         md = mdict.get("metadata", {}) or {}
         rows.append({
             "id": mdict.get("id"),
@@ -313,16 +318,27 @@ def build_prompt(query: str, contexts: List[Dict[str, Any]], max_chunk_chars: in
     allowed_block = ", ".join(allowed_ids)
 
     system = (
-        "You are a customer feedback analyst. Return ONLY a single JSON object.\n"
-        """You are a STRICT retrieval-grounded system.  
-            Rules: 
-                - NEVER mention foods, menu items, or experiences not explicitly present in retrieved chunks. 
-                - NEVER infer menu items. - If evidence is missing, say:   "Not enough evidence in retrieved reviews." 
-                - Do not use outside knowledge. 
-                - Every claim must be traceable to retrieved chunk text.\n"""
-        "CRITICAL: You may ONLY cite chunk_id values that appear in the retrieved chunks list.\n"
-        "If a claim is not supported by the chunks, write exactly:\n"
-        "\"Not enough evidence in retrieved reviews.\""
+        "You are a STRICT retrieval-grounded customer feedback analyst.\n"
+        "You MUST respond with a single valid JSON object only.\n\n"
+    
+        "CRITICAL RULES:\n"
+        "- NEVER mention foods, menu items, services, or experiences "
+        "that are not explicitly written in the retrieved review chunks.\n"
+    
+        "- NEVER infer menu items.\n"
+        "- NEVER guess.\n"
+        "- NEVER use outside knowledge.\n"
+        "- NEVER generalize beyond the retrieved evidence.\n"
+    
+        "- Every claim MUST be traceable to exact retrieved text.\n"
+    
+        "- If evidence is insufficient, say exactly:\n"
+        "\"Not enough evidence in retrieved reviews.\"\n"
+    
+        "- If a food item is not explicitly mentioned in retrieved chunks, "
+        "you MUST NOT mention it.\n"
+    
+        "- Use ONLY retrieved chunk text.\n"
     )
 
     user = f"""
@@ -382,6 +398,17 @@ def generate_grounded_response(
     client = OpenAI(api_key=openai_key)
 
     contexts = retrieve(query, top_k=top_k, exclude_owner_responses=True)
+
+    print("\n========== RETRIEVED CHUNKS ==========")
+    
+    for c in contexts:
+        print("\n---")
+        print("ID:", c["id"])
+        print("Score:", round(c["score"], 4))
+        print("Themes:", c.get("themes"))
+        print("Text:", c["text"][:500])
+    
+    print("=====================================\n")
 
     # If retrieval is empty, return deterministic "not enough evidence"
     if not contexts:
