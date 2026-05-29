@@ -314,7 +314,12 @@ def build_prompt(query: str, contexts: List[Dict[str, Any]], max_chunk_chars: in
 
     system = (
         "You are a customer feedback analyst. Return ONLY a single JSON object.\n"
-        "Use ONLY the provided review chunks as evidence.\n"
+        """You are a STRICT retrieval-grounded system.  
+            Rules: 
+                - NEVER mention foods, menu items, or experiences not explicitly present in retrieved chunks. 
+                - NEVER infer menu items. - If evidence is missing, say:   "Not enough evidence in retrieved reviews." 
+                - Do not use outside knowledge. 
+                - Every claim must be traceable to retrieved chunk text.\n"""
         "CRITICAL: You may ONLY cite chunk_id values that appear in the retrieved chunks list.\n"
         "If a claim is not supported by the chunks, write exactly:\n"
         "\"Not enough evidence in retrieved reviews.\""
